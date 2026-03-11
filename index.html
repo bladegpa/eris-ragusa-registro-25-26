@@ -1,0 +1,62 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1.0,maximum-scale=1.0,user-scalable=no,viewport-fit=cover">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="theme-color" content="#1B3F8B">
+<title>Registro Elettronico — ERIS Ragusa 2025/2026</title>
+
+<!-- Librerie esterne -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
+
+<!-- Stili -->
+<link rel="stylesheet" href="styles.css">
+</head>
+<body>
+<div id="toast" class="toast"></div>
+
+<!-- Dati (immagini base64, template DOCX) — non toccare -->
+<script src="assets.js"></script>
+
+<!-- Dati fissi dell'app (studenti, materie, configurazione) — 1E defaults -->
+<script src="data.js"></script>
+
+<!-- Dati fissi classe 1D (separati, non toccano data.js) -->
+<script src="data_1d.js"></script>
+
+<!-- Dati fissi classe 1G (separati) -->
+<script src="data_1g.js"></script>
+
+<!-- Dati fissi classe 2C (separati) -->
+<script src="data_2c.js"></script>
+
+<!-- Dati fissi classe 2D (separati) -->
+<script src="data_2d.js"></script>
+
+<!-- Dati fissi classe 3F (separati) -->
+<script src="data_3f.js"></script>
+
+<!-- Selezione classe + logica di switch (isola 1E da 1D su Firebase) -->
+<script src="class_select.js"></script>
+
+<!-- Logica core (utils, Firebase, autenticazione, voti) -->
+<script src="logic.js"></script>
+
+<!-- Esportazione (Excel, griglia, importazione, schede DOCX) -->
+<script src="export.js"></script>
+
+<!-- Interfaccia utente (render pagine, admin, login) -->
+<script src="ui.js"></script>
+
+<!-- Avvio: snapshot dati 1E originali → mostra selezione classe → carica Firebase -->
+<script>
+  snapshotClass1E();   // Salva copia immutabile dei dati 1E (prima di qualsiasi switch)
+  renderClassSelect(); // Mostra la schermata di scelta classe
+  loadFB();            // Carica Firebase SDK in background
+</script>
+</body>
+</html>
