@@ -1139,6 +1139,7 @@ ${isCondotta&&canEditCondotta?`<div class="info-box info-yellow" style="margin:8
           <input class="g-inp${isEd?" edit":""}" data-i="${i}"
             style="${isSav&&!isEd?"color:"+gradeColor(saved.value)+";border-color:"+gradeColor(saved.value)+"55":""}"
             type="text" inputmode="decimal" value="${val}" placeholder="—" autocomplete="off">
+          <button class="btn-nc" data-nc="${i}">N.C.</button>
           ${isSav&&!isEd
             ?`<button class="btn-del" data-del="${i}">✕</button>`
             :`<button class="btn-ok${isSav?" saved":""}" data-ok="${i}">${isSav?"✓":"→"}</button>`}
@@ -1166,6 +1167,7 @@ ${isCondotta&&canEditCondotta?`<div class="info-box info-yellow" style="margin:8
     });
     $$(".btn-ok[data-ok]").forEach(btn=>{btn.addEventListener("click",function(){confirmGrade(parseInt(this.dataset.ok));});});
     $$(".btn-del[data-del]").forEach(btn=>{btn.addEventListener("click",function(){deleteGrade(App.subjId,parseInt(this.dataset.del));});});
+    $$(".btn-nc[data-nc]").forEach(btn=>{btn.addEventListener("click",function(){const i=parseInt(this.dataset.nc);App.edits[i]="NC";confirmGrade(i);});});
   }
 }
 
