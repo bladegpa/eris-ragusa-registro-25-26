@@ -121,6 +121,8 @@ input,select{font-family:inherit;-webkit-tap-highlight-color:transparent}
 .btn-ok:active{transform:scale(.92)}
 .btn-ok.saved{background:#059669;box-shadow:0 2px 8px #05966944}
 .btn-del{width:36px;height:36px;border:none;border-radius:9px;background:#FEF2F2;color:#EF4444;font-size:14px;display:flex;align-items:center;justify-content:center;flex-shrink:0}
+.btn-nc{height:38px;padding:0 9px;border:none;border-radius:9px;background:#7C3AED;color:white;font-size:11px;font-weight:800;letter-spacing:.5px;display:flex;align-items:center;justify-content:center;box-shadow:0 2px 8px #7C3AED44;flex-shrink:0;cursor:pointer}
+.btn-nc:active{transform:scale(.92)}
 /* ADMIN STUDENT MGMT */
 .st-mgmt{display:flex;align-items:center;padding:11px 14px;border-bottom:1px solid #F1F5F9;gap:8px}
 .st-mgmt:last-child{border-bottom:none}

@@ -893,12 +893,14 @@ function buildHtmlPagella(st,idx){
     const e=App.grades[s.id]?.[idx];
     const voto=e?e.value:"—";
     const nomeModulo=s.label; // nome completo senza abbreviazioni
+    const docente=docNameOf(s.id)||"—";
     const vn=String(voto).trim().toUpperCase();
     const vNum=vn==="NC"?2:parseFloat(vn.replace(",","."));
     const vColor=isNaN(vNum)?"#475569":vNum<6?"#DC2626":vNum<7?"#CA8A04":vNum<9?"#D97706":"#059669";
     const vBg=isNaN(vNum)?"#EFF6FF":vNum<6?"#FEF2F2":vNum<7?"#FEFCE8":vNum<9?"#FFFBEB":"#ECFDF5";
     return`<tr>
       <td style="padding:1.5px 5px;font-size:7.5pt;border:0.5pt solid #CBD5E1;vertical-align:middle">${nomeModulo}</td>
+      <td style="padding:1.5px 3px;font-size:6.5pt;border:0.5pt solid #CBD5E1;vertical-align:middle;color:#475569">${docente}</td>
       <td style="padding:1.5px 3px;font-size:7.5pt;border:0.5pt solid #CBD5E1;text-align:center;color:#475569;vertical-align:middle;white-space:nowrap">${s.ore>0?s.ore:"—"}</td>
       <td style="padding:1.5px 3px;font-size:9pt;font-weight:800;border:0.5pt solid #CBD5E1;text-align:center;color:${vColor};background:${vBg};vertical-align:middle;white-space:nowrap">${voto}</td>
     </tr>`;
@@ -918,6 +920,7 @@ function buildHtmlPagella(st,idx){
     <table style="width:60%;border-collapse:collapse;font-family:Arial,sans-serif">
       <tr style="background:#0F2557;color:white">
         <th style="padding:3px 5px;font-size:7.5pt;text-align:left;border:0.5pt solid #0F2040">MODULO DI FORMAZIONE</th>
+        <th style="padding:3px 4px;font-size:7.5pt;text-align:left;border:0.5pt solid #0F2040">DOCENTE</th>
         <th style="padding:3px 4px;font-size:7.5pt;text-align:center;border:0.5pt solid #0F2040;width:30px">ORE</th>
         <th style="padding:3px 4px;font-size:7.5pt;text-align:center;border:0.5pt solid #0F2040;width:36px">VOTO</th>
       </tr>

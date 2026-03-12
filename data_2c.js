@@ -62,7 +62,7 @@ const SUBJECTS_2C = [
   {id:"m05",  label:"M05 - Scienze della Terra",            short:"M05",   ore:40,  doc:"scire",      emoji:"🌍",color:"#10B981"},
   {id:"m06",  label:"M06 - Scienze Integrate",              short:"M06",   ore:40,  doc:"scire",      emoji:"🔬",color:"#F59E0B"},
   {id:"m07",  label:"M07 - Informatica",                    short:"M07",   ore:32,  doc:"",           emoji:"💻",color:"#6366F1"},
-  {id:"m08",  label:"M08 - Storia II",                      short:"M08",   ore:28,  doc:"pizzo",      emoji:"🏛",color:"#B45309"},
+  {id:"m08",  label:"M08 - Storia II",                      short:"M08",   ore:28,  doc:"ciacera",      emoji:"🏛",color:"#B45309"},
   {id:"m09",  label:"M09 - Svil. Sost. Ambientale II",      short:"M09",   ore:20,  doc:"scollo",     emoji:"🌱",color:"#84CC16"},
   {id:"m10",  label:"M10 - Pari Opportunita\' II",          short:"M10",   ore:30,  doc:"leone",      emoji:"🤝",color:"#BE185D"},
   {id:"m11",  label:"M11 - Cura Impresa e Diritto",         short:"M11",   ore:28,  doc:"leone",      emoji:"⚖", color:"#DC2626"},

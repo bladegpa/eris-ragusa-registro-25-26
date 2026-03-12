@@ -11,32 +11,36 @@ const TUTOR_NAME_1D = "Gabriella Savarino";
 
 // ── Alunni classe 1D (da registro ufficiale) ────────────────────────────────
 const STUDENTS_1D = [
-  {num:1, name:"CERAMI LUANA"},
-  {num:2, name:"CILIA SCALONE SALVATORE"},
-  {num:3, name:"CRISCIONE ALESSANDRO"},
-  {num:4, name:"DI MARTINO GIOVANNI"},
-  {num:5, name:"DRARENI ABOUBAKR"},
-  {num:6, name:"HAMOUDA ADEM"},
-  {num:7, name:"KOVACI LEONEL"},
-  {num:8, name:"LA ROCCA ANGELO"},
-  {num:9, name:"LEONARDI GIOVANNI"},
+  {num:1,  name:"CERAMI LUANA"},
+  {num:2,  name:"CILIA SCALONE SALVATORE"},
+  {num:3,  name:"CRISCIONE ALESSANDRO"},
+  {num:4,  name:"DI MARTINO GIOVANNI"},
+  {num:5,  name:"DRARENI ABOUBAKR"},
+  {num:6,  name:"HAMOUDA ADEM"},
+  {num:7,  name:"KOVACI LEONEL"},
+  {num:8,  name:"LA ROCCA ANGELO"},
+  {num:9,  name:"LEONARDI GIOVANNI"},
   {num:10, name:"LUCIFORA GIOVANNI"},
-  {num:11, name:"RESTIVO PINA"},
-  {num:12, name:"RRUSHI MUHAMED"},
-  {num:13, name:"SIERAKOWSKI DORIAN"},
-  {num:14, name:"SIGONA GIORGIO"},
-  {num:15, name:"SOLARINO BENEDETTO FRANCESCO"},
-  {num:16, name:"SOLARINO GIACOS"},
-  {num:17, name:"VIRZI FILIPPO"},
-  {num:18, name:"YAZIDI AHMED RAYEN"},
-  {num:19, name:"ROSELLA ALESSANDRO"},
-  {num:20, name:"GAGLIANO GIUSEPPE"},
-  {num:21, name:"ISMAILI ALBIN"},
-  {num:22, name:"D'IZZIA CHRISTIAN"},
-  {num:23, name:"RADSI NOUR"},
-  {num:24, name:"BEZHDILI FLAVIO"},
-  {num:25, name:"HAMMOUDA RADHOUANE"},
-  {num:26, name:"INVERNINO SAMUEL"},
+  {num:11, name:"MANGIONE GIUSEPPE"},       // ⚠️ TRASFERITO — da segnare in Admin
+  {num:12, name:"MICIELI MONIA"},            // ⚠️ TRASFERITA — da segnare in Admin
+  {num:13, name:"OBOROCEANU ANGELO GABRIELE"}, // ⚠️ TRASFERITO — da segnare in Admin
+  {num:14, name:"RESTIVO PINA"},
+  {num:15, name:"RRUSHI MUHAMED"},
+  {num:16, name:"SIERAKOWSKI DORIAN"},
+  {num:17, name:"SIGONA GIORGIO"},
+  {num:18, name:"SOLARINO BENEDETTO FRANCESCO"},
+  {num:19, name:"SOLARINO GIACOS"},
+  {num:20, name:"VIRZI FILIPPO"},
+  {num:21, name:"YAZIDI AHMED RAYEN"},
+  {num:22, name:"ROSELLA ALESSANDRO"},
+  {num:23, name:"GAGLIANO GIUSEPPE"},
+  {num:24, name:"D'IZZIA CHRISTIAN"},        // ← invertito con ISMAILI
+  {num:25, name:"ISMAILI ALBIN"},             // ← invertito con D'IZZIA
+  {num:26, name:"RADSI NOUR"},
+  {num:27, name:"BEZHDILI FLAVIO"},
+  {num:28, name:"HAMMOUDA RADHOUANE"},
+  {num:29, name:"INVERNINO SAMUEL"},
+  {num:30, name:"KORRESHI ANHEL"},
 ];
 
 // ── Nomi brevi e completi docenti 1D ────────────────────────────────────────

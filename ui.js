@@ -381,7 +381,6 @@ table{width:100%;border-collapse:collapse;table-layout:fixed}
     <span style="display:inline-flex;align-items:center;gap:1mm"><span style="width:5px;height:5px;background:#059669;border-radius:1px;display:inline-block"></span>9&ndash;10</span>
     <span style="color:#94A3B8">N/A = materia non del corso &nbsp;|&nbsp; <sup>${COURSE_TRACKS.track1.sup}</sup> = ${COURSE_TRACKS.track1.label}${COURSE_TRACKS.track2.id?` &nbsp;|&nbsp; <sup>${COURSE_TRACKS.track2.sup}</sup> = ${COURSE_TRACKS.track2.label}`:""}</span>
   </div>
-  <div style="font-size:4.5pt;color:#64748B">Stampato il ${new Date().toLocaleDateString("it-IT")} &mdash; ${AUTORE}</div>
 </div>
 <div style="border-top:1.5pt solid #003087;padding:1.5mm 3mm;display:flex;align-items:center;gap:3mm">
   <div style="flex:1;text-align:center;font-size:3.5pt;line-height:1.4;color:#111;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">
@@ -522,7 +521,6 @@ ${(!isPartial?(()=>{
     <span style="display:inline-flex;align-items:center;gap:1mm"><span style="width:5px;height:5px;background:#059669;border-radius:1px;display:inline-block"></span>9&ndash;10</span>
     <span style="color:#94A3B8">${legendNote}</span>
   </div>
-  <div style="font-size:4.5pt;color:#64748B">Stampato il ${new Date().toLocaleDateString("it-IT")} &mdash; ${AUTORE}</div>
 </div>
 <div style="border-top:1.5pt solid #003087;padding:1.5mm 3mm;display:flex;align-items:center;gap:3mm">
   <div style="flex:1;text-align:center;font-size:3.5pt;line-height:1.4;color:#111;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">
