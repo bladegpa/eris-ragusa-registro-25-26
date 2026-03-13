@@ -1139,7 +1139,6 @@ ${isCondotta&&canEditCondotta?`<div class="info-box info-yellow" style="margin:8
           <input class="g-inp${isEd?" edit":""}" data-i="${i}"
             style="${isSav&&!isEd?"color:"+gradeColor(saved.value)+";border-color:"+gradeColor(saved.value)+"55":""}"
             type="text" inputmode="decimal" value="${val}" placeholder="—" autocomplete="off">
-          <button class="btn-nc" data-nc="${i}">N.C.</button>
           ${isSav&&!isEd
             ?`<button class="btn-del" data-del="${i}">✕</button>`
             :`<button class="btn-ok${isSav?" saved":""}" data-ok="${i}">${isSav?"✓":"→"}</button>`}
@@ -1167,7 +1166,6 @@ ${isCondotta&&canEditCondotta?`<div class="info-box info-yellow" style="margin:8
     });
     $$(".btn-ok[data-ok]").forEach(btn=>{btn.addEventListener("click",function(){confirmGrade(parseInt(this.dataset.ok));});});
     $$(".btn-del[data-del]").forEach(btn=>{btn.addEventListener("click",function(){deleteGrade(App.subjId,parseInt(this.dataset.del));});});
-    $$(".btn-nc[data-nc]").forEach(btn=>{btn.addEventListener("click",function(){const i=parseInt(this.dataset.nc);App.edits[i]="NC";confirmGrade(i);});});
   }
 }
 
@@ -1221,7 +1219,7 @@ function renderAdminMaterie(){
   const isRO=!!App.teacher.isSegreteria; // tutor can edit grades but NOT category
   const canEditCond=App.teacher.isAdmin||App.teacher.isTutor;
   el.innerHTML=`
-    ${App.teacher.isAdmin?`<button class="btn-green" id="btn-xls"><span style="font-size:22px">📥</span><div><div class="btn-lbl-big">Esporta Excel Completo</div><div class="btn-lbl-small">Tutte le materie · medie · colori</div></div></button>`:App.teacher.isSegreteria?`<button class="btn-green" id="btn-xls" style="background:linear-gradient(135deg,#0F172A,#1E3A5F)"><span style="font-size:22px">💾</span><div><div class="btn-lbl-big">BACKUP GENERALE</div><div class="btn-lbl-small">Esporta tutte le 5 classi in un unico Excel</div></div></button>`:""}
+    ${isPrivileged()?`<button class="btn-green" id="btn-xls"><span style="font-size:22px">📥</span><div><div class="btn-lbl-big">Esporta Excel Completo</div><div class="btn-lbl-small">Tutte le materie · medie · colori</div></div></button>`:""}
     <button class="btn-print-grid" id="btn-mat-print"><span style="font-size:22px">🖨️</span><div><div class="btn-lbl-big">Stampa Griglia A4</div><div class="btn-lbl-small">HTML stampabile · 1 pagina landscape</div></div></button>
     ${App.teacher.isAdmin?`<button class="btn-print-grid" id="btn-pagelle" style="background:linear-gradient(135deg,#7C3AED,#5B21B6)"><span style="font-size:22px">📋</span><div><div class="btn-lbl-big">Genera Pagelle</div><div class="btn-lbl-small">DOCX + HTML · tutti gli alunni attivi</div></div></button>`:""}
     ${App.teacher.isAdmin?`<button class="btn-import" id="btn-import"><span style="font-size:22px">📤</span><div><div class="btn-lbl-big">Importa Voti da File</div><div class="btn-lbl-small">CSV o Excel — aggiorna i voti dal file</div></div></button>`:""}
@@ -1265,7 +1263,7 @@ function renderAdminMaterie(){
         </div>`;
       }).join("")}
     </div>`;
-  const bxls=$("#btn-xls");if(bxls)bxls.addEventListener("click",()=>{if(App.teacher.isSegreteria){buildBackupAllClasses();}else{const wb=buildWB(SUBJECTS);XLSX.writeFile(wb,xlsFilename());toast("✅ Excel esportato!","ok");}});
+  const bxls=$("#btn-xls");if(bxls)bxls.addEventListener("click",()=>{const wb=buildWB(SUBJECTS);XLSX.writeFile(wb,xlsFilename());toast("✅ Excel esportato!","ok");});
   const bmp=$("#btn-mat-print");if(bmp)bmp.addEventListener("click",exportGridHtml);
   if(App.teacher.isAdmin){
     const bpg=$("#btn-pagelle");if(bpg)bpg.addEventListener("click",exportPagelleZip);
@@ -1480,7 +1478,7 @@ function renderAdminRiepilogo(){
       ${isPrivileged()?`<div class="leg"><span class="leg-dot" style="background:#7C3AED"></span>Condotta</div>`:""}
       <div class="leg" style="color:#94A3B8"><em>N/A = materia non del corso</em></div>
     </div>
-    ${!App.teacher.isSegreteria?`<button class="btn-green" id="btn-xls2"><span style="font-size:20px">📥</span><div><div class="btn-lbl-big">Esporta Excel Completo</div><div class="btn-lbl-small">Tutti i voti · medie · voto finale</div></div></button>`:""}
+    <button class="btn-green" id="btn-xls2"><span style="font-size:20px">📥</span><div><div class="btn-lbl-big">Esporta Excel Completo</div><div class="btn-lbl-small">Tutti i voti · medie · voto finale</div></div></button>
     <button class="btn-print-grid" id="btn-grid-print"><span style="font-size:20px">🖨️</span><div><div class="btn-lbl-big">Stampa Griglia A4</div><div class="btn-lbl-small">HTML stampabile · 1 pagina landscape</div></div></button>
     ${App.teacher.isSegreteria?`<button class="btn-green" id="btn-backup-seg" style="background:linear-gradient(135deg,#0F172A,#1E3A5F)"><span style="font-size:20px">💾</span><div><div class="btn-lbl-big">BACKUP GENERALE</div><div class="btn-lbl-small">Esporta tutte le 5 classi in un unico Excel</div></div></button>`:""}`;
   const b=$("#btn-xls2");if(b)b.addEventListener("click",()=>{const wb=buildWB(SUBJECTS);XLSX.writeFile(wb,xlsFilename());toast("✅ Excel esportato!","ok");});

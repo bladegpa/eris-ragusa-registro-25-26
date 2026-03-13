@@ -5,106 +5,312 @@
 //  EXPORT & SHARE
 // ═══════════════════════════════════════════════
 function buildWB(cols){
+  // ── Setup ────────────────────────────────────────────────────────────────────
   const wb=XLSX.utils.book_new();
-  const subjCols=(cols||SUBJECTS).filter(s=>!s.conductaOnly);
-  const showCond=isPrivileged();
+  const isPartial=!!(cols&&cols.length>0);
+  const showAmmDim=!isPartial;
+  const subjCols=(isPartial?cols:SUBJECTS).filter(s=>!s.conductaOnly);
   const condS=SUBJECTS.find(s=>s.id==="condotta");
-  const cleanName=s=>s.label.replace(/^[A-Za-z0-9]+[Eeb\d]* - /,"");
-  const TB={top:{style:"thin",color:{rgb:"BFBFBF"}},bottom:{style:"thin",color:{rgb:"BFBFBF"}},left:{style:"thin",color:{rgb:"BFBFBF"}},right:{style:"thin",color:{rgb:"BFBFBF"}}};
-  const MBL={top:{style:"medium",color:{rgb:"94A3B8"}},bottom:{style:"medium",color:{rgb:"94A3B8"}},left:{style:"medium",color:{rgb:"1B3F8B"}},right:{style:"thin",color:{rgb:"BFBFBF"}}};
-  const gRGB=v=>{const n=parseFloat(String(v).replace(",","."));return isNaN(n)?"3B82F6":n<6?"EF4444":n<7?"CA8A04":n<9?"D97706":"059669";};
+
+  // Stessa logica HTML: griglia completa (admin/tutor) mostra anche condotta
+  const showCond=showAmmDim&&isPrivileged()&&!!condS;
+  const allCols=[...subjCols,...(showCond?[condS]:[])];
+
+  // Indici colonne Excel (0-based)
+  // 0=N, 1=NOME, [2=AMM, 3=DIM se showAmmDim], poi allCols, poi MA, MP, VF
+  const ammOff=showAmmDim?2:0;
+  const subjOff=2+ammOff;                         // prima colonna materia
+  const maOff=subjOff+allCols.length;
+  const mpOff=maOff+1;
+  const vfOff=mpOff+1;
+  const nc=vfOff+1;                               // numero totale colonne
+
+  // Helper: indice colonna → lettera Excel (A..Z, AA..AZ, BA..)
+  const col=n=>{
+    let s="";let x=n;
+    do{s=String.fromCharCode(65+(x%26))+s;x=Math.floor(x/26)-1;}while(x>=0);
+    return s;
+  };
+
+  // ── Colori (identici a buildGridHtml) ────────────────────────────────────────
+  const gRGB=v=>{
+    if(v==="NC")return"DC2626";
+    const n=parseFloat(String(v).replace(",","."));
+    if(isNaN(n))return"3B82F6";
+    if(n<6)return"DC2626";if(n<7)return"B45309";if(n<9)return"D97706";return"059669";
+  };
+  const gFill=v=>{
+    if(v==="NC")return"FEF2F2";
+    const n=parseFloat(String(v).replace(",","."));
+    if(isNaN(n))return"EFF6FF";
+    if(n<6)return"FEF2F2";if(n<7)return"FEFCE8";if(n<9)return"FFFBEB";return"ECFDF5";
+  };
+
+  // ── Border helpers ───────────────────────────────────────────────────────────
+  const tb=(col="CBD5E1",w="thin")=>({style:w,color:{rgb:col}});
+  const bAll=(c="CBD5E1",w="thin")=>({top:tb(c,w),bottom:tb(c,w),left:tb(c,w),right:tb(c,w)});
+  const bVF=()=>({...bAll(),left:tb("3B82F6","medium")});
+
+  // ── Calcolo dati alunni ──────────────────────────────────────────────────────
   const xlsVF=(i,sCols)=>{
     const mp=calcMP(i,sCols);if(mp===null)return null;
     const ce=App.grades["condotta"]?.[i];
     const cond=ce?parseFloat(String(ce.value).replace(",",".")):null;
     return(cond!==null&&!isNaN(cond)&&cond<=8)?Math.floor(mp):Math.round(mp);
   };
-  const nc=2+subjCols.length+2+(showCond&&condS?1:0)+1;
-  const col=n=>n<26?String.fromCharCode(65+n):"A"+String.fromCharCode(65+n-26);
-  const vfIdx=nc-1;
-  const titleStr=`${ISTITUTO} | Classe ${CLASSE} | A.S. ${ANNO} — Registro Voti`;
-  const rows=[
-    [null,titleStr,...Array(nc-2).fill(null)],
-    ["N.","COGNOME NOME",...subjCols.map(s=>s.short+" - "+cleanName(s)),"Media Aritm.","Media Pond.",...(showCond&&condS?["CONDOTTA"]:[]),"VOTO FINALE"],
-    [null,"ORE h",...subjCols.map(s=>s.ore||"\u2014"),null,null,...(showCond&&condS?["\u2014"]:[]),""],
-  ];
-  STUDENTS.forEach((st,i)=>{
-    const dim=!!App.dimessi[i];
-    if(dim){rows.push([st.num,st.name+" (DIMESSO)",...subjCols.map(()=>"\u2014"),"\u2014","\u2014",...(showCond&&condS?["\u2014"]:[]),"\u2014"]);return;}
-    const r=[st.num,st.name];
-    subjCols.forEach(s=>{
-      if(!studentHasSubject(i,s.id)){r.push("N/A");return;}
-      const e=App.grades[s.id]?.[i];
-      if(e){const n=parseFloat(String(e.value).replace(",","."));r.push(isNaN(n)?e.value:n);}else r.push(null);
+  const cleanLabel=l=>l.replace(/^[A-Za-z0-9]+[Eeb\d]* - /,"");
+  const fmtDocShort=full=>{
+    if(!full)return"";
+    const parts=full.trim().split(/\s+/);
+    if(parts.length===1)return parts[0].charAt(0)+".";
+    return parts.slice(0,-1).join(" ")+" "+parts[parts.length-1].charAt(0)+".";
+  };
+
+  // ── Costruzione foglio vuoto per applicare stili cella per cella ─────────────
+  const ws={};
+  const setCell=(r,c,v,t,s)=>{
+    const addr=col(c)+(r+1);
+    ws[addr]={v,t:t||(v==null?"z":typeof v==="number"?"n":"s"),s};
+  };
+
+  // ━━━ ROW 0 — TITOLO ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+  const titleStr=`${ISTITUTO}  |  Classe ${CLASSE}  |  A.S. ${ANNO}  —  Griglia di Valutazione`;
+  const titleFill={fgColor:{rgb:"EFF6FF"},patternType:"solid"};
+  const titleBorder=bAll("CBD5E1");
+  for(let c=0;c<nc;c++){
+    setCell(0,c,c===1?titleStr:null,c===1?"s":"z",{
+      fill:titleFill,border:titleBorder,
+      font:c===1?{bold:true,sz:12,name:"Arial",color:{rgb:"1B3F8B"}}:{name:"Arial",sz:9},
+      alignment:c===1?{horizontal:"left",vertical:"center"}:{horizontal:"center",vertical:"center"},
     });
-    const ma=calcMedia(i,subjCols),mp=calcMP(i,subjCols);
-    r.push(ma!==null?Math.round(ma*100)/100:null,mp!==null?Math.round(mp*100)/100:null);
-    if(showCond&&condS){const ce=App.grades["condotta"]?.[i];r.push(ce?ce.value:null);}
-    r.push(xlsVF(i,subjCols));
-    rows.push(r);
+  }
+
+  // ━━━ ROW 1 — INTESTAZIONI COLONNE ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+  const hdrBase={alignment:{horizontal:"center",vertical:"bottom",textRotation:90,wrapText:true}};
+  const hdrBluFill={fgColor:{rgb:"0F2557"},patternType:"solid"};
+
+  // N.
+  setCell(1,0,"N.","s",{
+    fill:hdrBluFill,font:{bold:true,sz:9,name:"Arial",color:{rgb:"FFFFFF"}},
+    alignment:{horizontal:"center",vertical:"center"},border:bAll("0F2040"),
   });
-  rows.push([null,"DOCENTI",...subjCols.map(s=>docFullOf(s.id)),null,null,...(showCond&&condS?["ADMIN/TUTOR"]:[]),null]);
-  const ws=XLSX.utils.aoa_to_sheet(rows);
-  ws["!merges"]=[{s:{r:0,c:1},e:{r:0,c:nc-1}}];
-  ws["!cols"]=[{wch:6.9},{wch:27},...subjCols.map(()=>({wch:7.6})),{wch:13},{wch:13},...(showCond&&condS?[{wch:11}]:[]),{wch:11}];
-  ws["!rows"]=[{hpt:32},{hpt:129},{hpt:16},...STUDENTS.map(()=>({hpt:20})),{hpt:122}];
-  ws["!freeze"]={xSplit:2,ySplit:3};
-  const hB={fill:{fgColor:{rgb:"1B3F8B"},patternType:"solid"},alignment:{horizontal:"center",vertical:"bottom",textRotation:90,wrapText:true},border:TB};
-  ws["A2"]={v:"N.",t:"s",s:{...hB,font:{bold:true,sz:10,name:"Arial",color:{rgb:"FFFFFF"}},alignment:{horizontal:"center",vertical:"center"}}};
-  ws["B2"]={v:"COGNOME NOME",t:"s",s:{...hB,font:{bold:true,sz:10,name:"Arial",color:{rgb:"FFFFFF"}},alignment:{horizontal:"left",vertical:"bottom",textRotation:0}}};
-  subjCols.forEach((s,si)=>{ws[col(2+si)+"2"]={v:s.short+" - "+cleanName(s),t:"s",s:{...hB,font:{bold:true,sz:9,name:"Arial",color:{rgb:"FFFFFF"}}}};});
-  ws[col(2+subjCols.length)+"2"]={v:"Media Aritm.",t:"s",s:{...hB,font:{bold:true,sz:9,name:"Arial",color:{rgb:"1D4ED8"}},fill:{fgColor:{rgb:"1E3A5F"},patternType:"solid"}}};
-  ws[col(3+subjCols.length)+"2"]={v:"Media Pond.",t:"s",s:{...hB,font:{bold:true,sz:9,name:"Arial",color:{rgb:"FDE68A"}},fill:{fgColor:{rgb:"78350F"},patternType:"solid"}}};
-  if(showCond&&condS) ws[col(4+subjCols.length)+"2"]={v:"CONDOTTA",t:"s",s:{...hB,font:{bold:true,sz:9,name:"Arial",color:{rgb:"DDD6FE"}},fill:{fgColor:{rgb:"4C1D95"},patternType:"solid"}}};
-  ws[col(vfIdx)+"2"]={v:"VOTO FINALE",t:"s",s:{...hB,font:{bold:true,sz:10,name:"Arial",color:{rgb:"FDE68A"}},fill:{fgColor:{rgb:"0F2557"},patternType:"solid"},border:{...TB,left:{style:"medium",color:{rgb:"1B3F8B"}}}}};
-  ws["A1"]={v:null,t:"z",s:{fill:{fgColor:{rgb:"EFF6FF"},patternType:"solid"},border:TB}};
-  ws["B1"]={v:titleStr,t:"s",s:{font:{bold:true,sz:13,name:"Arial",color:{rgb:"1B3F8B"}},fill:{fgColor:{rgb:"EFF6FF"},patternType:"solid"},alignment:{horizontal:"left",vertical:"center"},border:TB}};
-  for(let c=2;c<nc;c++) ws[col(c)+"1"]={v:null,t:"z",s:{fill:{fgColor:{rgb:"EFF6FF"},patternType:"solid"},border:TB}};
-  const oB={fill:{fgColor:{rgb:"F1F5F9"},patternType:"solid"},alignment:{horizontal:"center",vertical:"center"},border:TB};
-  ws["A3"]={v:null,t:"z",s:oB};
-  ws["B3"]={v:"ORE h",t:"s",s:{...oB,font:{bold:true,italic:true,sz:9,name:"Arial",color:{rgb:"1B3F8B"}},alignment:{horizontal:"left",vertical:"center"}}};
-  for(let c=2;c<nc;c++){const a=col(c)+"3";const cv=ws[a]?ws[a].v:null;ws[a]={v:cv,t:cv!=null?"n":"z",s:{...oB,font:{italic:true,sz:9,name:"Arial",color:{rgb:"64748B"}}}};}
+  // NOMINATIVO
+  setCell(1,1,"NOMINATIVO ALLIEVI","s",{
+    fill:hdrBluFill,font:{bold:true,sz:9,name:"Arial",color:{rgb:"FFFFFF"}},
+    alignment:{horizontal:"left",vertical:"bottom"},border:bAll("0F2040"),
+  });
+  // AMM / DIM
+  if(showAmmDim){
+    setCell(1,2,"AMM.","s",{fill:hdrBluFill,font:{bold:true,sz:8,name:"Arial",color:{rgb:"FFFFFF"}},alignment:{horizontal:"center",vertical:"bottom",textRotation:90},border:bAll("0F2040")});
+    setCell(1,3,"DIM.","s",{fill:hdrBluFill,font:{bold:true,sz:8,name:"Arial",color:{rgb:"FFFFFF"}},alignment:{horizontal:"center",vertical:"bottom",textRotation:90},border:bAll("0F2040")});
+  }
+  // Materie
+  allCols.forEach((s,si)=>{
+    const isCond=!!s.conductaOnly;
+    const fillRgb=isCond?"F5F3FF":"FFFFFF";
+    const textRgb=isCond?"5B21B6":"0F172A";
+    const borderRgb=isCond?"C4B5FD":"CBD5E1";
+    const label=s.short+"\n"+cleanLabel(s.label);
+    setCell(1,subjOff+si,label,"s",{
+      fill:{fgColor:{rgb:fillRgb},patternType:"solid"},
+      font:{bold:true,sz:7,name:"Arial",color:{rgb:textRgb}},
+      alignment:{horizontal:"center",vertical:"bottom",textRotation:90,wrapText:true},
+      border:bAll(borderRgb),
+    });
+  });
+  // MA
+  setCell(1,maOff,"M.A.\nMedia Aritmetica","s",{
+    fill:{fgColor:{rgb:"1E3A5F"},patternType:"solid"},
+    font:{bold:true,sz:7,name:"Arial",color:{rgb:"93C5FD"}},
+    alignment:{horizontal:"center",vertical:"bottom",textRotation:90,wrapText:true},
+    border:bAll("0F2040"),
+  });
+  // MP
+  setCell(1,mpOff,"M.P.\nMedia Ponderata","s",{
+    fill:{fgColor:{rgb:"78350F"},patternType:"solid"},
+    font:{bold:true,sz:7,name:"Arial",color:{rgb:"FCD34D"}},
+    alignment:{horizontal:"center",vertical:"bottom",textRotation:90,wrapText:true},
+    border:bAll("0F2040"),
+  });
+  // VF
+  setCell(1,vfOff,"V.F.\nVoto Finale","s",{
+    fill:{fgColor:{rgb:"0F2557"},patternType:"solid"},
+    font:{bold:true,sz:7,name:"Arial",color:{rgb:"FDE68A"}},
+    alignment:{horizontal:"center",vertical:"bottom",textRotation:90,wrapText:true},
+    border:{...bAll("0F2040"),left:tb("3B82F6","medium")},
+  });
+
+  // ━━━ ROW 2 — ORE ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+  const oreFill={fgColor:{rgb:"E8EDF5"},patternType:"solid"};
+  setCell(2,0,null,"z",{fill:oreFill,border:bAll()});
+  setCell(2,1,"ORE h","s",{fill:oreFill,font:{bold:true,italic:true,sz:8,name:"Arial",color:{rgb:"1B3F8B"}},alignment:{horizontal:"left",vertical:"center"},border:bAll()});
+  if(showAmmDim){
+    setCell(2,2,null,"z",{fill:oreFill,border:bAll()});
+    setCell(2,3,null,"z",{fill:oreFill,border:bAll()});
+  }
+  allCols.forEach((s,si)=>{
+    const v=s.ore>0?s.ore:null;
+    setCell(2,subjOff+si,v,v!=null?"n":"z",{
+      fill:oreFill,font:{italic:true,sz:8,name:"Arial",color:{rgb:"64748B"}},
+      alignment:{horizontal:"center",vertical:"center"},border:bAll(),
+    });
+  });
+  setCell(2,maOff,null,"z",{fill:{fgColor:{rgb:"DBEAFE"},patternType:"solid"},border:bAll()});
+  setCell(2,mpOff,null,"z",{fill:{fgColor:{rgb:"FEF9C3"},patternType:"solid"},border:bAll()});
+  setCell(2,vfOff,null,"z",{fill:{fgColor:{rgb:"EEF2FF"},patternType:"solid"},border:bVF()});
+
+  // ━━━ RIGHE ALUNNI ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
   STUDENTS.forEach((st,i)=>{
-    const row=4+i,dim=!!App.dimessi[i];
-    const rowBg=i%2===0?"FFFFFF":"F8FAFC";
-    const nF={fgColor:{rgb:dim?"FEF2F2":rowBg},patternType:"solid"};
-    ws[col(0)+row]={v:st.num,t:"n",s:{font:{bold:true,sz:10,name:"Arial",color:{rgb:dim?"94A3B8":"475569"}},fill:nF,alignment:{horizontal:"center",vertical:"center"},border:MBL}};
-    ws[col(1)+row]={v:dim?st.name+" (DIMESSO)":st.name,t:"s",s:{font:{bold:true,sz:10,name:"Arial",color:{rgb:dim?"94A3B8":"0F172A"}},fill:nF,alignment:{horizontal:"left",vertical:"center"},border:{...TB,left:{style:"medium",color:{rgb:"94A3B8"}}}}};
-    for(let c=2;c<nc;c++){
-      const a=col(c)+row;const ev=ws[a]?ws[a].v:null;
-      const isNA=(ev==="N/A");
-      const isMA=(c===2+subjCols.length),isMP=(c===3+subjCols.length);
-      const isCond=(showCond&&condS&&c===4+subjCols.length);
-      const isVF=(c===vfIdx);
-      let s2;
+    const row=3+i;
+    const dim=!!App.dimessi[i];
+    const tr=!!App.trasferiti[i];
+    const inactive=dim||tr;
+    const rowFillRgb=dim?"F1F5F9":tr?"FFF7ED":i%2===0?"FFFFFF":"F8FAFC";
+    const nameFillRgb=dim?"F1F5F9":tr?"FFF7ED":"EEF2F7";
+    const numColor=dim?"94A3B8":tr?"EA580C":"475569";
+    const nameColor=dim?"94A3B8":tr?"C2410C":"0F172A";
+
+    // N.
+    setCell(row,0,st.num,"n",{
+      fill:{fgColor:{rgb:nameFillRgb},patternType:"solid"},
+      font:{bold:true,sz:9,name:"Arial",color:{rgb:numColor}},
+      alignment:{horizontal:"center",vertical:"center"},border:bAll(),
+    });
+    // NOME
+    const cs=corsS(i);
+    const track1sup=(!inactive&&cs===COURSE_TRACKS.track1.id)?` [${COURSE_TRACKS.track1.sup}]`:"";
+    const track2sup=(!inactive&&COURSE_TRACKS.track2.id&&cs===COURSE_TRACKS.track2.id)?` [${COURSE_TRACKS.track2.sup}]`:"";
+    setCell(row,1,st.name+track1sup+track2sup,"s",{
+      fill:{fgColor:{rgb:nameFillRgb},patternType:"solid"},
+      font:{bold:!dim,sz:9,name:"Arial",color:{rgb:nameColor},strike:dim},
+      alignment:{horizontal:"left",vertical:"center"},border:bAll(),
+    });
+    // AMM / DIM
+    if(showAmmDim){
+      setCell(row,2,inactive?"":getAmmDate(i)||"","s",{
+        fill:{fgColor:{rgb:rowFillRgb},patternType:"solid"},
+        font:{sz:7,name:"Arial",color:{rgb:"0F172A"}},
+        alignment:{horizontal:"center",vertical:"center"},border:bAll(),
+      });
+      const dimVal=dim?(getDimDate(i)||"DIM."):tr?(getTrasDate(i)||"TRANSF."):"";
+      const dimColor=tr?"EA580C":"EF4444";
+      setCell(row,3,dimVal,"s",{
+        fill:{fgColor:{rgb:rowFillRgb},patternType:"solid"},
+        font:{bold:!!dimVal,sz:7,name:"Arial",color:{rgb:dimVal?dimColor:"CBD5E1"}},
+        alignment:{horizontal:"center",vertical:"center"},border:bAll(),
+      });
+    }
+    // Voti materie
+    allCols.forEach((s,si)=>{
+      const c=subjOff+si;
       if(dim){
-        s2={fill:{fgColor:{rgb:"FEF2F2"},patternType:"solid"},font:{sz:9,name:"Arial",color:{rgb:"CBD5E1"}},alignment:{horizontal:"center"},border:isVF?{...TB,left:{style:"medium",color:{rgb:"1B3F8B"}}}:TB};
-      } else if(isNA){
-        s2={fill:{fgColor:{rgb:"E8EDF3"},patternType:"solid"},font:{sz:8,name:"Arial",color:{rgb:"94A3B8"}},alignment:{horizontal:"center"},border:TB};
-      } else if(ev!=null){
-        const rgb=gRGB(ev);
-        if(isMA)        s2={fill:{fgColor:{rgb:"DBEAFE"},patternType:"solid"},font:{bold:true,sz:11,name:"Arial",color:{rgb}},alignment:{horizontal:"center",vertical:"center"},border:{...TB,left:{style:"medium",color:{rgb:"93C5FD"}},right:{style:"medium",color:{rgb:"93C5FD"}}}};
-        else if(isMP)   s2={fill:{fgColor:{rgb:"FEF9C3"},patternType:"solid"},font:{bold:true,sz:11,name:"Arial",color:{rgb}},alignment:{horizontal:"center",vertical:"center"},border:{...TB,right:{style:"medium",color:{rgb:"FCD34D"}}}};
-        else if(isCond) s2={fill:{fgColor:{rgb:"EDE9FE"},patternType:"solid"},font:{bold:true,sz:11,name:"Arial",color:{rgb}},alignment:{horizontal:"center"},border:{...TB,left:{style:"medium",color:{rgb:"A78BFA"}},right:{style:"medium",color:{rgb:"A78BFA"}}}};
-        else if(isVF)   s2={fill:{fgColor:{rgb:"0F2557"},patternType:"solid"},font:{bold:true,sz:14,name:"Arial",color:{rgb:"FDE68A"}},alignment:{horizontal:"center",vertical:"center"},border:{...TB,left:{style:"medium",color:{rgb:"1B3F8B"}}}};
-        else            s2={fill:{fgColor:{rgb:rowBg},patternType:"solid"},font:{bold:true,sz:11,name:"Arial",color:{rgb}},alignment:{horizontal:"center",vertical:"center"},border:TB};
-      } else {
-        const fg=isMA?"DBEAFE":isMP?"FEF9C3":isCond?"EDE9FE":isVF?"1A2E5A":rowBg;
-        s2={fill:{fgColor:{rgb:fg},patternType:"solid"},font:{sz:9,name:"Arial",color:{rgb:"CBD5E1"}},alignment:{horizontal:"center"},border:isVF?{...TB,left:{style:"medium",color:{rgb:"1B3F8B"}}}:TB};
+        setCell(row,c,"DIM.","s",{fill:{fgColor:{rgb:"FEF2F2"},patternType:"solid"},font:{bold:true,sz:7,name:"Arial",color:{rgb:"EF4444"}},alignment:{horizontal:"center",vertical:"center"},border:bAll("D4D8E2")});
+        return;
       }
-      ws[a]={v:ev,t:ev!=null&&!isNA&&typeof ev==="number"?"n":ev!=null?"s":"z",s:s2};
+      if(tr){
+        setCell(row,c,"TRANSF.","s",{fill:{fgColor:{rgb:"FFF7ED"},patternType:"solid"},font:{bold:true,sz:7,name:"Arial",color:{rgb:"EA580C"}},alignment:{horizontal:"center",vertical:"center"},border:bAll("FED7AA")});
+        return;
+      }
+      if(!studentHasSubject(i,s.id)){
+        setCell(row,c,"N/A","s",{fill:{fgColor:{rgb:"E4EAF2"},patternType:"solid"},font:{sz:7,name:"Arial",color:{rgb:"94A3B8"}},alignment:{horizontal:"center",vertical:"center"},border:bAll()});
+        return;
+      }
+      const e=App.grades[s.id]?.[i];
+      if(!e){
+        setCell(row,c,null,"z",{fill:{fgColor:{rgb:rowFillRgb},patternType:"solid"},font:{sz:9,name:"Arial",color:{rgb:"CBD5E1"}},alignment:{horizontal:"center",vertical:"center"},border:bAll()});
+        return;
+      }
+      const vRaw=e.value;
+      const vNum=parseFloat(String(vRaw).replace(",","."));
+      const vVal=isNaN(vNum)?vRaw:vNum;
+      setCell(row,c,vVal,isNaN(vNum)?"s":"n",{
+        fill:{fgColor:{rgb:gFill(vRaw)},patternType:"solid"},
+        font:{bold:true,sz:10,name:"Arial",color:{rgb:gRGB(vRaw)}},
+        alignment:{horizontal:"center",vertical:"center"},border:bAll(),
+      });
+    });
+    // MA
+    if(inactive){
+      setCell(row,maOff,null,"z",{fill:{fgColor:{rgb:"DBEAFE"},patternType:"solid"},font:{sz:9,name:"Arial",color:{rgb:"CBD5E1"}},alignment:{horizontal:"center",vertical:"center"},border:bAll("93C5FD")});
+      setCell(row,mpOff,null,"z",{fill:{fgColor:{rgb:"FEF9C3"},patternType:"solid"},font:{sz:9,name:"Arial",color:{rgb:"CBD5E1"}},alignment:{horizontal:"center",vertical:"center"},border:bAll("FCD34D")});
+      setCell(row,vfOff,null,"z",{fill:{fgColor:{rgb:"1A2E5A"},patternType:"solid"},font:{sz:9,name:"Arial",color:{rgb:"CBD5E1"}},alignment:{horizontal:"center",vertical:"center"},border:bVF()});
+    } else {
+      const ma=calcMedia(i,subjCols),mp=calcMP(i,subjCols),vf=xlsVF(i,subjCols);
+      const maV=ma!==null?Math.round(ma*10)/10:null;
+      const mpV=mp!==null?Math.round(mp*10)/10:null;
+      setCell(row,maOff,maV,maV!=null?"n":"z",{
+        fill:{fgColor:{rgb:"DBEAFE"},patternType:"solid"},
+        font:{bold:true,sz:10,name:"Arial",color:{rgb:maV!=null?gRGB(maV):"CBD5E1"}},
+        alignment:{horizontal:"center",vertical:"center"},
+        border:{...bAll("93C5FD"),left:tb("93C5FD","medium"),right:tb("93C5FD","medium")},
+        numFmt:"0.0",
+      });
+      setCell(row,mpOff,mpV,mpV!=null?"n":"z",{
+        fill:{fgColor:{rgb:"FEF9C3"},patternType:"solid"},
+        font:{bold:true,sz:10,name:"Arial",color:{rgb:mpV!=null?gRGB(mpV):"CBD5E1"}},
+        alignment:{horizontal:"center",vertical:"center"},
+        border:{...bAll("FCD34D"),right:tb("FCD34D","medium")},
+        numFmt:"0.0",
+      });
+      const vfFill=vf!=null?gFill(vf):"1A2E5A";
+      const vfColor=vf!=null?gRGB(vf):"CBD5E1";
+      setCell(row,vfOff,vf,vf!=null?"n":"z",{
+        fill:{fgColor:{rgb:vfFill},patternType:"solid"},
+        font:{bold:true,sz:13,name:"Arial",color:{rgb:vfColor}},
+        alignment:{horizontal:"center",vertical:"center"},border:bVF(),
+      });
     }
   });
-  const dr=4+STUDENTS.length;
-  const dB={fill:{fgColor:{rgb:"0F2557"},patternType:"solid"},font:{bold:true,sz:8,name:"Arial",color:{rgb:"FDE68A"}},alignment:{horizontal:"center",vertical:"bottom",textRotation:90},border:TB};
-  for(let c=0;c<nc;c++){const a=col(c)+dr;const cv=ws[a]?ws[a].v:null;ws[a]={v:cv,t:cv?"s":"z",s:dB};}
-  ws[col(0)+dr]={v:null,t:"z",s:dB};
-  ws[col(1)+dr]={v:"DOCENTI",t:"s",s:{...dB,alignment:{horizontal:"left",vertical:"center",textRotation:0}}};
-  ws[col(2+subjCols.length)+dr]={v:null,t:"z",s:{...dB,fill:{fgColor:{rgb:"1E3A5F"},patternType:"solid"}}};
-  ws[col(3+subjCols.length)+dr]={v:null,t:"z",s:{...dB,fill:{fgColor:{rgb:"78350F"},patternType:"solid"}}};
-  if(showCond&&condS) ws[col(4+subjCols.length)+dr]={v:"Admin/Tutor",t:"s",s:{...dB,fill:{fgColor:{rgb:"4C1D95"},patternType:"solid"}}};
-  ws[col(vfIdx)+dr]={v:null,t:"z",s:{...dB,border:{...TB,left:{style:"medium",color:{rgb:"1B3F8B"}}}}};
-  XLSX.utils.book_append_sheet(wb,ws,("Classe "+CLASSE+" "+App.teacher.label).slice(0,31));
+
+  // ━━━ ROW DOCENTI ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+  const dr=3+STUDENTS.length;
+  const docFill={fgColor:{rgb:"0F2557"},patternType:"solid"};
+  setCell(dr,0,null,"z",{fill:docFill,border:bAll("1E3A5F")});
+  setCell(dr,1,"DOCENTI","s",{
+    fill:docFill,font:{bold:true,sz:8,name:"Arial",color:{rgb:"FDE68A"}},
+    alignment:{horizontal:"center",vertical:"center"},border:bAll("1E3A5F"),
+  });
+  if(showAmmDim){
+    setCell(dr,2,null,"z",{fill:docFill,border:bAll("1E3A5F")});
+    setCell(dr,3,null,"z",{fill:docFill,border:bAll("1E3A5F")});
+  }
+  allCols.forEach((s,si)=>{
+    const full=docFullOf(s.id)||"";
+    const tf=fmtDocShort(full);
+    setCell(dr,subjOff+si,tf||null,tf?"s":"z",{
+      fill:{fgColor:{rgb:"E8EDF5"},patternType:"solid"},
+      font:{bold:true,sz:7,name:"Arial",color:{rgb:"0F172A"}},
+      alignment:{horizontal:"center",vertical:"bottom",textRotation:90,wrapText:true},
+      border:bAll(),
+    });
+  });
+  setCell(dr,maOff,null,"z",{fill:{fgColor:{rgb:"1E3A5F"},patternType:"solid"},border:bAll("1E3A5F")});
+  setCell(dr,mpOff,null,"z",{fill:{fgColor:{rgb:"78350F"},patternType:"solid"},border:bAll("1E3A5F")});
+  setCell(dr,vfOff,null,"z",{fill:{fgColor:{rgb:"0F2557"},patternType:"solid"},border:{...bAll("1E3A5F"),left:tb("3B82F6","medium")}});
+
+  // ━━━ Dimensioni colonne e righe ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+  const wCols=[{wch:5},{wch:26}];
+  if(showAmmDim){wCols.push({wch:8},{wch:8});}
+  allCols.forEach(()=>wCols.push({wch:5.8}));
+  wCols.push({wch:9},{wch:9},{wch:9});
+  ws["!cols"]=wCols;
+
+  const hRows=[{hpt:22},{hpt:90},{hpt:14}];
+  STUDENTS.forEach(()=>hRows.push({hpt:17}));
+  hRows.push({hpt:88});
+  ws["!rows"]=hRows;
+
+  // ━━━ Ref, merge titolo, freeze ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+  const totalRows=dr+1;
+  ws["!ref"]=`A1:${col(nc-1)}${totalRows}`;
+  ws["!merges"]=[{s:{r:0,c:0},e:{r:0,c:nc-1}}];
+  ws["!freeze"]={xSplit:2+ammOff,ySplit:3};
+
+  // Stampa landscape A4
+  ws["!pageSetup"]={orientation:"landscape",paperSize:9,fitToPage:true,fitToWidth:1,fitToHeight:0};
+  ws["!printOptions"]={gridLines:false};
+
+  XLSX.utils.book_append_sheet(wb,ws,("Griglia "+CLASSE).slice(0,31));
   return wb;
 }
 
