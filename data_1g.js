@@ -23,7 +23,7 @@ const STUDENTS_1G = [
   {num:13, name:"IDOUDI JAOUAHR"},
   {num:14, name:"LOREFICE SIMONE ANDRE\'"},
   {num:15, name:"MATARAZZO ALESSANDRO"},
-  {num:16, name:"PALAZZOLO MICHELE"},
+  {num:16, name:"PALAZZOLO MICHELLE"},
   {num:17, name:"SAAFET AYHAM"},
   {num:18, name:"SALAH ISKANDER"},
   {num:19, name:"SALIFOU ABDOL BAISSOU"},
