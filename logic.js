@@ -326,8 +326,10 @@ function startSync(){
   fbRef("pins").on("value",snap=>{const v=snap.exists()?snap.val():{};Object.assign(App.pins,v);});
   // Sync voti condotta parziali (uno per docente)
   fbRef("condotta_parziale").on("value",snap=>{App.condottaParziale=snap.exists()?snap.val():{};if(App.page!=="login")renderPage();});
+  // Sync blocco per singola materia
+  fbRef("subjectsLocked").on("value",snap=>{App.subjectsLocked=snap.exists()?snap.val():{};if(App.page!=="login")renderPage();});
 }
-function stopSync(){if(DB){try{fbRef("grades").off();fbRef("dimessi").off();fbRef("corsiStudenti").off();fbRef("corsiMaterie").off();fbRef("docenteMaterie").off();fbRef("accessLog").off();fbRef("ammissioni").off();fbRef("dimissioni_date").off();fbRef("trasferiti").off();fbRef("trasferiti_date").off();fbRef("customTeachers").off();fbRef("pins").off();fbRef("condotta_parziale").off();}catch(e){}} App.fbL=null;}
+function stopSync(){if(DB){try{fbRef("grades").off();fbRef("dimessi").off();fbRef("corsiStudenti").off();fbRef("corsiMaterie").off();fbRef("docenteMaterie").off();fbRef("accessLog").off();fbRef("ammissioni").off();fbRef("dimissioni_date").off();fbRef("trasferiti").off();fbRef("trasferiti_date").off();fbRef("customTeachers").off();fbRef("pins").off();fbRef("condotta_parziale").off();fbRef("subjectsLocked").off();}catch(e){}} App.fbL=null;}
 // ─── Helper Firebase con prefisso classe ────────────────────────────────────
 // Tutti i nodi Firebase classe-specifici passano per fbRef.
 // 1E: prefisso "" → nodi a radice (compatibilità totale)
@@ -372,7 +374,7 @@ function doLogout(){
   App.grades={};App.dimessi={};App.corsiStudenti={};App.corsiMaterie={};
   App.docenteMaterie={};App.customTeachers={};App.accessLog={};
   App.ammissioni={defaultDate:"",overrides:{}};App.dimissioni={};App.pins={};
-  App.trasferiti={};App.trasferiti_date={};App.condottaParziale={};
+  App.trasferiti={};App.trasferiti_date={};App.condottaParziale={};App.subjectsLocked={};
   renderClassSelect();
 }
 
@@ -445,6 +447,15 @@ async function deleteCondottaParziale(idx){
   await fbSet("condotta_parziale/"+tid+"/"+idx,null);
   await recalcCondottaMedia(idx);
   toast("🗑️ Voto condotta eliminato","ok");renderGrades();
+}
+async function toggleSubjectLock(sid){
+  const newVal=!App.subjectsLocked[sid];
+  if(newVal)App.subjectsLocked[sid]=true;
+  else delete App.subjectsLocked[sid];
+  await fbSet("subjectsLocked/"+sid,newVal||null);
+  const s=SUBJECTS.find(x=>x.id===sid);
+  toast(newVal?"🔒 "+s.label+" — bloccata":"🔓 "+s.label+" — aperta","ok");
+  renderAdminMaterie();
 }
 async function toggleDimesso(idx){
   const was=!!App.dimessi[idx];

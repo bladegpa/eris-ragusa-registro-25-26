@@ -1028,22 +1028,25 @@ ${bannerHTML()}
   </div>
   <div class="card">
     <div class="card-head"><span class="sec-lbl">📖 Tocca una materia per inserire i voti</span></div>
+    ${Object.keys(App.subjectsLocked||{}).length>0?`<div style="margin:0 0 10px;background:#FEF2F2;border:1px solid #FECACA;border-radius:10px;padding:10px 12px;font-size:12px;color:#991B1B;font-weight:600">🔒 Alcune materie sono chiuse — puoi consultarle ma non modificare i voti</div>`:""}
     ${myS.map(s=>{
       const sts=studentsForSubject(s.id);
       const done=sts.filter(_=>!!App.grades[s.id]?.[STUDENTS.indexOf(_)]).length;
       const pct=sts.length>0?Math.round(done/sts.length*100):0;
-      const col=pct===100?"#059669":pct>0?"#3B82F6":"#CBD5E1";
-      const bg=pct===100?"#ECFDF5":pct>0?"#EFF6FF":"#F8FAFC";
+      const locked=!!App.subjectsLocked[s.id];
+      const col=locked?"#991B1B":pct===100?"#059669":pct>0?"#3B82F6":"#CBD5E1";
+      const bg=locked?"#FEF2F2":pct===100?"#ECFDF5":pct>0?"#EFF6FF":"#F8FAFC";
       const mc=corsM(s.id);
-      return`<button class="row-btn" data-sid="${s.id}">
-        <div class="row-icon">${s.emoji}</div>
+      return`<button class="row-btn" data-sid="${s.id}" style="${locked?"background:#FFF5F5;border-left:3px solid #DC2626;opacity:.85":""}">
+        <div class="row-icon" style="position:relative">${s.emoji}${locked?`<span style="position:absolute;top:-4px;right:-6px;font-size:11px">🔒</span>`:""}
+        </div>
         <div class="row-body">
-          <div class="row-name">${s.label}</div>
-          <div class="row-meta">${corsoBadge(mc)} · 🕐 ${s.ore}h · ${sts.length} alunni</div>
+          <div class="row-name" style="${locked?"color:#991B1B;text-decoration:line-through;opacity:.7":""}">${s.label}</div>
+          <div class="row-meta">${locked?`<span style="color:#DC2626;font-weight:700">🔒 Chiusa — sola lettura</span>`:`${corsoBadge(mc)} · 🕐 ${s.ore}h · ${sts.length} alunni`}</div>
         </div>
         <div class="prog-col">
-          <span class="prog-pill" style="background:${bg};color:${col}">${done}/${sts.length}</span>
-          <div class="prog-bar"><div class="prog-fill" style="width:${pct}%;background:${col}"></div></div>
+          <span class="prog-pill" style="background:${bg};color:${col}">${locked?"🔒":done+"/"+sts.length}</span>
+          <div class="prog-bar"><div class="prog-fill" style="width:${locked?100:pct}%;background:${locked?"#FCA5A5":col}"></div></div>
         </div>
       </button>`;
     }).join("")}
@@ -1122,10 +1125,12 @@ function renderGrades(){
   const isReadOnly=!!App.teacher.isSegreteria;
   const isCondotta=s.conductaOnly===true;
   const isAdminOrTutor=App.teacher.isAdmin||App.teacher.isTutor;
+  // Blocco per singola materia: i docenti normali non possono modificare
+  const isLocked=!!App.subjectsLocked[App.subjId]&&!isAdminOrTutor&&!App.teacher.isSegreteria;
   // Per condotta: admin/tutor override diretto; docente normale → parziale
-  const isCondottaParziale=isCondotta&&!isAdminOrTutor&&!isReadOnly;
+  const isCondottaParziale=isCondotta&&!isAdminOrTutor&&!isReadOnly&&!isLocked;
   const canEditCondotta=isAdminOrTutor;
-  const effectiveReadOnly=isReadOnly||(isCondotta&&!canEditCondotta&&!isCondottaParziale);
+  const effectiveReadOnly=isReadOnly||isLocked||(isCondotta&&!canEditCondotta&&!isCondottaParziale);
 
   // Helper per ottenere il dato corretto da mostrare nella riga
   const getDisplayEntry=(i)=>{
@@ -1148,7 +1153,8 @@ function renderGrades(){
   document.body.innerHTML=`
 ${headerHTML(s.short+" — "+s.label.replace(/^M\d+[Eeb\d]* - /,""),true)}
 ${bannerHTML()}
-${effectiveReadOnly?`<div class="info-box info-blue" style="margin:8px 14px;border-radius:10px">${isCondotta?"⭐ Condotta — sola lettura":"👁 Modalità sola lettura"}</div>`:""}
+${effectiveReadOnly&&isLocked?`<div class="info-box" style="margin:8px 14px;border-radius:10px;background:#FEF2F2;border:1px solid #FECACA;color:#991B1B">🔒 <strong>Registro chiuso</strong> — Admin o Tutor hanno disabilitato l'inserimento voti. Puoi consultare i voti ma non modificarli.</div>`:""}
+${effectiveReadOnly&&!isLocked?`<div class="info-box info-blue" style="margin:8px 14px;border-radius:10px">${isCondotta?"⭐ Condotta — sola lettura":"👁 Modalità sola lettura"}</div>`:""}
 ${isCondottaParziale?`<div class="info-box" style="margin:8px 14px;border-radius:10px;background:#FAF5FF;border:1px solid #DDD6FE;color:#6D28D9">⭐ <strong>Il tuo voto di Condotta</strong> — verrà mediato con quello degli altri docenti. Admin e Tutor possono sempre sovrascrivere il risultato finale.</div>
 <div style="margin:0 14px 8px;background:#FEFEFE;border:1px solid #E9D5FF;border-radius:12px;padding:12px 14px;font-size:11px;color:#374151;line-height:1.6">
   <div style="font-weight:800;color:#6D28D9;font-size:12px;margin-bottom:8px">📋 Guida al voto di Condotta — Legge 150/2024</div>
@@ -1378,6 +1384,7 @@ function renderAdminMaterie(){
             </div>
           </div>
           <div style="display:flex;flex-direction:column;gap:4px;flex-shrink:0;align-items:flex-end">
+            ${(App.teacher.isAdmin||App.teacher.isTutor)?(()=>{const locked=!!App.subjectsLocked[s.id];return`<button class="btn-subj-lock" data-lock="${s.id}" style="height:26px;padding:0 10px;background:${locked?"#7F1D1D":"#F0FDF4"};border:1px solid ${locked?"#DC2626":"#A7F3D0"};border-radius:7px;font-size:11px;font-weight:800;color:${locked?"white":"#065F46"};cursor:pointer;white-space:nowrap;transition:all .15s">${locked?"🔒 Chiusa":"🔓 Aperta"}</button>`;})():""}
             ${(!isRO&&!isT&&!isCond)?`<select class="cors-sel" data-cors-m="${s.id}">
               <option value="comune"${mc==="comune"?" selected":""}>⭐ Comune</option>
               <option value="${COURSE_TRACKS.track1.id}"${mc===COURSE_TRACKS.track1.id?" selected":""}>${COURSE_TRACKS.track1.emoji} ${COURSE_TRACKS.track1.label}</option>
@@ -1395,6 +1402,7 @@ function renderAdminMaterie(){
     const bpg=$("#btn-pagelle");if(bpg)bpg.addEventListener("click",exportPagelleZip);
     const bi=$("#btn-import");if(bi)bi.addEventListener("click",openImportModal);
   }
+  $$(".btn-subj-lock[data-lock]").forEach(btn=>{btn.addEventListener("click",function(e){e.stopPropagation();toggleSubjectLock(this.dataset.lock);});});
   if(!isRO){
     $$(".cors-sel[data-cors-m]").forEach(sel=>{sel.addEventListener("change",function(){setCorsMateria(this.dataset.corsM,this.value);});});
   }

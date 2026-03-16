@@ -163,5 +163,6 @@ const App={
   fbPrefix:"",    // "" per 1E, "1D/" per 1D — isola i nodi Firebase per classe
   currentClass:"1E",  // classe attualmente attiva
   condottaParziale:{}, // {teacherId: {studentIdx: {value,ts,docente}}} — voti condotta parziali
+  subjectsLocked:{},   // {sid: true} — materie bloccate (docenti non possono modificare)
 };
 
