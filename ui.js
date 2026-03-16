@@ -1008,7 +1008,15 @@ async function inviaGrigliaWA(cols){
 }
 
 function renderHome(){
-  const myS=SUBJECTS.filter(s=>mySubjects().includes(s.id));
+  const myS=SUBJECTS.filter(s=>mySubjects().includes(s.id)&&!s.conductaOnly);
+  const condS=SUBJECTS.find(s=>s.id==="condotta");
+  // Voti condotta già inseriti da questo docente
+  const myCondotta=App.condottaParziale[App.teacher.id]||{};
+  const condDone=activeStudents().filter(st=>!!myCondotta[STUDENTS.indexOf(st)]).length;
+  const condTotal=activeStudents().length;
+  const condPct=condTotal>0?Math.round(condDone/condTotal*100):0;
+  const condCol=condPct===100?"#7C3AED":condDone>0?"#A78BFA":"#CBD5E1";
+  const condBg=condPct===100?"#F5F3FF":condDone>0?"#FAF5FF":"#F8FAFC";
   document.body.innerHTML=`
 ${headerHTML("Le mie materie",false)}
 ${bannerHTML()}
@@ -1040,6 +1048,20 @@ ${bannerHTML()}
       </button>`;
     }).join("")}
   </div>
+  ${condS?`<div class="card" style="border-left:3px solid #7C3AED">
+    <div class="card-head"><span class="sec-lbl" style="color:#7C3AED">⭐ Voto di Condotta</span></div>
+    <button class="row-btn" id="btn-condotta-home" style="border-left:none">
+      <div class="row-icon" style="font-size:22px">⭐</div>
+      <div class="row-body">
+        <div class="row-name" style="color:#7C3AED">Condotta — il tuo contributo</div>
+        <div class="row-meta" style="color:#9333EA">Il voto finale è la media di tutti i docenti</div>
+      </div>
+      <div class="prog-col">
+        <span class="prog-pill" style="background:${condBg};color:${condCol}">${condDone}/${condTotal}</span>
+        <div class="prog-bar"><div class="prog-fill" style="width:${condPct}%;background:${condCol}"></div></div>
+      </div>
+    </button>
+  </div>`:""}
   ${dimN()>0?`<div class="info-box info-red">⚠️ ${dimN()} alunno/i dimesso/i — non visibili in questa app</div>`:""}
   <button class="btn-print-grid" id="btn-home-grid-print"><span style="font-size:22px">📊</span><div><div class="btn-lbl-big">SCARICA RIEPILOGO GRIGLIA VOTI</div><div class="btn-lbl-small">Le mie materie · solo 1 pagina</div></div></button>
   <button class="btn-green" id="btn-home-invia"><span style="font-size:22px">💬</span><div><div class="btn-lbl-big">Invia al Tutor</div><div class="btn-lbl-small">Griglia + messaggio WhatsApp</div></div></button>
@@ -1050,6 +1072,7 @@ ${bottomNavHTML("home")}
   $$(".row-btn[data-sid]").forEach(btn=>{
     btn.addEventListener("click",function(){App.subjId=this.dataset.sid;App.edits={};App.page="grades";renderGrades();});
   });
+  const btnCH=$("#btn-condotta-home");if(btnCH)btnCH.addEventListener("click",()=>{App.subjId="condotta";App.edits={};App.page="grades";renderGrades();});
   const btnHGP=$("#btn-home-grid-print");if(btnHGP)btnHGP.addEventListener("click",()=>exportGridHtmlCols(myS));
   const btnHI=$("#btn-home-invia");if(btnHI)btnHI.addEventListener("click",async()=>inviaGrigliaWA(myS));
 }
@@ -1096,16 +1119,112 @@ ${bottomNavHTML("summary")}
 function renderGrades(){
   const s=SUBJECTS.find(x=>x.id===App.subjId);
   const sts=studentsForSubject(s.id);
-  const isReadOnly=!!App.teacher.isSegreteria; // tutor can edit grades
+  const isReadOnly=!!App.teacher.isSegreteria;
   const isCondotta=s.conductaOnly===true;
-  // For condotta: only admin and tutor can edit (not segreteria, not normal teachers)
-  const canEditCondotta=App.teacher.isAdmin||App.teacher.isTutor;
-  const effectiveReadOnly=isReadOnly||(isCondotta&&!canEditCondotta);
+  const isAdminOrTutor=App.teacher.isAdmin||App.teacher.isTutor;
+  // Per condotta: admin/tutor override diretto; docente normale → parziale
+  const isCondottaParziale=isCondotta&&!isAdminOrTutor&&!isReadOnly;
+  const canEditCondotta=isAdminOrTutor;
+  const effectiveReadOnly=isReadOnly||(isCondotta&&!canEditCondotta&&!isCondottaParziale);
+
+  // Helper per ottenere il dato corretto da mostrare nella riga
+  const getDisplayEntry=(i)=>{
+    if(isCondottaParziale){
+      // Mostra il voto che ha inserito questo docente (non la media)
+      return App.condottaParziale[App.teacher.id]?.[i]||null;
+    }
+    return App.grades[App.subjId]?.[i]||null;
+  };
+  // Nota informativa per condotta parziale
+  const mediaCondottaInfo=(i)=>{
+    const mediaEntry=App.grades["condotta"]?.[i];
+    const partials=Object.entries(App.condottaParziale||{})
+      .filter(([,tv])=>tv[i]&&tv[i].value)
+      .map(([tid,tv])=>`${TN[tid]||tid}: <strong>${tv[i].value}</strong>`);
+    if(!partials.length)return"";
+    return`<span style="font-size:9px;color:#7C3AED;display:block;margin-top:1px">Media (${partials.length} doc.): ${mediaEntry?mediaEntry.value:"—"}</span>`;
+  };
+
   document.body.innerHTML=`
 ${headerHTML(s.short+" — "+s.label.replace(/^M\d+[Eeb\d]* - /,""),true)}
 ${bannerHTML()}
-${effectiveReadOnly?`<div class="info-box info-blue" style="margin:8px 14px;border-radius:10px">${isCondotta?"⭐ Condotta — modificabile solo da Admin e Tutor":"👁 Modalità sola lettura"}</div>`:""}
-${isCondotta&&canEditCondotta?`<div class="info-box info-yellow" style="margin:8px 14px;border-radius:10px">⭐ Voto di <strong>Condotta</strong> — visibile a Admin, Tutor e Segreteria</div>`:""}
+${effectiveReadOnly?`<div class="info-box info-blue" style="margin:8px 14px;border-radius:10px">${isCondotta?"⭐ Condotta — sola lettura":"👁 Modalità sola lettura"}</div>`:""}
+${isCondottaParziale?`<div class="info-box" style="margin:8px 14px;border-radius:10px;background:#FAF5FF;border:1px solid #DDD6FE;color:#6D28D9">⭐ <strong>Il tuo voto di Condotta</strong> — verrà mediato con quello degli altri docenti. Admin e Tutor possono sempre sovrascrivere il risultato finale.</div>
+<div style="margin:0 14px 8px;background:#FEFEFE;border:1px solid #E9D5FF;border-radius:12px;padding:12px 14px;font-size:11px;color:#374151;line-height:1.6">
+  <div style="font-weight:800;color:#6D28D9;font-size:12px;margin-bottom:8px">📋 Guida al voto di Condotta — Legge 150/2024</div>
+  <div style="font-size:10px;color:#6B7280;margin-bottom:8px">Espresso in decimi (5–10). Ha effetti diretti su promozione e crediti.</div>
+  <div style="display:flex;flex-direction:column;gap:5px">
+    <div style="display:flex;gap:8px;align-items:flex-start">
+      <span style="min-width:26px;height:22px;background:#059669;color:white;border-radius:6px;font-weight:800;font-size:11px;display:flex;align-items:center;justify-content:center;flex-shrink:0">10</span>
+      <span><strong>Eccellente</strong> — Comportamento esemplare, piena responsabilità, partecipazione attiva e costruttiva, rispetto totale delle regole e della comunità scolastica.</span>
+    </div>
+    <div style="display:flex;gap:8px;align-items:flex-start">
+      <span style="min-width:26px;height:22px;background:#16A34A;color:white;border-radius:6px;font-weight:800;font-size:11px;display:flex;align-items:center;justify-content:center;flex-shrink:0">9</span>
+      <span><strong>Ottimo</strong> — Comportamento maturo e responsabile, partecipazione corretta e costante, autonomia e rispetto delle regole, contributo positivo al clima di classe.</span>
+    </div>
+    <div style="display:flex;gap:8px;align-items:flex-start">
+      <span style="min-width:26px;height:22px;background:#D97706;color:white;border-radius:6px;font-weight:800;font-size:11px;display:flex;align-items:center;justify-content:center;flex-shrink:0">8</span>
+      <span><strong>Buono</strong> — Comportamento corretto e responsabile, buona partecipazione, con margini di crescita nella maturazione personale o nello spirito di iniziativa.</span>
+    </div>
+    <div style="display:flex;gap:8px;align-items:flex-start">
+      <span style="min-width:26px;height:22px;background:#B45309;color:white;border-radius:6px;font-weight:800;font-size:11px;display:flex;align-items:center;justify-content:center;flex-shrink:0">7</span>
+      <span><strong>Discreto</strong> — Comportamento sostanzialmente corretto ma discontinuo. Autonomia parziale, necessità di maggiore attenzione ai doveri e alle regole di convivenza.</span>
+    </div>
+    <div style="display:flex;gap:8px;align-items:flex-start">
+      <span style="min-width:26px;height:22px;background:#DC2626;color:white;border-radius:6px;font-weight:800;font-size:11px;display:flex;align-items:center;justify-content:center;flex-shrink:0">6</span>
+      <span><strong>Sufficiente</strong> — Rispetto delle regole solo formale o parziale. ⚠️ Secondo Legge 150/2024: comporta sospensione del giudizio con obbligo di elaborato su cittadinanza e convivenza civile.</span>
+    </div>
+    <div style="display:flex;gap:8px;align-items:flex-start">
+      <span style="min-width:26px;height:22px;background:#7F1D1D;color:white;border-radius:6px;font-weight:800;font-size:11px;display:flex;align-items:center;justify-content:center;flex-shrink:0">5</span>
+      <span><strong>Insufficiente</strong> — Comportamento gravemente scorretto, atti di violenza, bullismo o sospensioni lunghe. 🚫 Comporta la non ammissione alla classe successiva o agli esami.</span>
+    </div>
+  </div>
+</div>`:""}
+${isCondotta&&isAdminOrTutor?(()=>{
+  // Costruisce la lista di tutti i docenti con le loro materie (escluso admin/tutor/segreteria)
+  const allT=TEACHERS.filter(t=>t.id!=="admin"&&t.id!=="tutor"&&t.id!=="segreteria");
+  const cp=App.condottaParziale||{};
+  // Per ogni docente conta quanti alunni ha votato
+  const withVotes=allT.filter(t=>cp[t.id]&&Object.keys(cp[t.id]).length>0);
+  const missing=allT.filter(t=>!cp[t.id]||Object.keys(cp[t.id]).length===0);
+  const partial=withVotes.filter(t=>{
+    const keys=Object.keys(cp[t.id]||{});
+    return keys.length<activeStudents().length;
+  });
+  const complete=withVotes.filter(t=>{
+    const keys=Object.keys(cp[t.id]||{});
+    return keys.length>=activeStudents().length;
+  });
+  return`<div style="margin:0 14px 8px;background:#FEFEFE;border:1px solid #FDE68A;border-radius:12px;padding:12px 14px;font-size:11px">
+  <div style="font-weight:800;color:#92400E;font-size:12px;margin-bottom:10px">👥 Stato voti condotta — ${allT.length} docenti</div>
+  ${complete.length>0?`<div style="margin-bottom:8px">
+    <div style="font-size:10px;font-weight:700;color:#059669;text-transform:uppercase;letter-spacing:.5px;margin-bottom:4px">✅ Completati (${complete.length})</div>
+    <div style="display:flex;flex-wrap:wrap;gap:4px">
+      ${complete.map(t=>{
+        const n=Object.keys(cp[t.id]).length;
+        return`<span style="background:#ECFDF5;border:1px solid #A7F3D0;border-radius:8px;padding:3px 8px;font-size:10px;color:#065F46"><strong>${TN[t.id]||t.label}</strong> <span style="opacity:.7">${n}/${activeStudents().length}</span></span>`;
+      }).join("")}
+    </div>
+  </div>`:""}
+  ${partial.length>0?`<div style="margin-bottom:8px">
+    <div style="font-size:10px;font-weight:700;color:#D97706;text-transform:uppercase;letter-spacing:.5px;margin-bottom:4px">⚠️ Parziali (${partial.length})</div>
+    <div style="display:flex;flex-wrap:wrap;gap:4px">
+      ${partial.map(t=>{
+        const n=Object.keys(cp[t.id]).length;
+        return`<span style="background:#FEF3C7;border:1px solid #FDE68A;border-radius:8px;padding:3px 8px;font-size:10px;color:#92400E"><strong>${TN[t.id]||t.label}</strong> <span style="opacity:.7">${n}/${activeStudents().length}</span></span>`;
+      }).join("")}
+    </div>
+  </div>`:""}
+  ${missing.length>0?`<div>
+    <div style="font-size:10px;font-weight:700;color:#DC2626;text-transform:uppercase;letter-spacing:.5px;margin-bottom:4px">❌ Non inserito (${missing.length})</div>
+    <div style="display:flex;flex-wrap:wrap;gap:4px">
+      ${missing.map(t=>`<span style="background:#FEF2F2;border:1px solid #FECACA;border-radius:8px;padding:3px 8px;font-size:10px;color:#991B1B"><strong>${TN[t.id]||t.label}</strong></span>`).join("")}
+    </div>
+  </div>`:""}
+  ${allT.length===0?`<div style="color:#94A3B8;font-style:italic">Nessun docente registrato per questa classe.</div>`:""}
+</div>`;
+})():""}
+${isCondotta&&isAdminOrTutor?`<div class="info-box info-yellow" style="margin:8px 14px;border-radius:10px">⭐ <strong>Override Condotta</strong> — stai sovrascrivendo il voto finale di condotta (Admin/Tutor). I voti parziali dei docenti restano salvati.</div>`:""}
 <div class="page-wrap">
   <div class="grade-hero" style="background:linear-gradient(135deg,${s.color}cc,${s.color})">
     <div style="font-size:24px;margin-bottom:4px">${s.emoji}</div>
@@ -1113,13 +1232,13 @@ ${isCondotta&&canEditCondotta?`<div class="info-box info-yellow" style="margin:8
     ${s.ore>0?`<span class="hbadge">🕐 ${s.ore}h</span>`:""}
     ${docOf(s.id)?`<span class="hbadge">👤 ${docNameOf(s.id)}</span>`:""}
     ${!isCondotta?`<span class="hbadge">${corsoBadge(corsM(s.id)).replace(/<[^>]+>/g,"").trim()}</span>`:""}
-    <span class="hbadge">✅ ${sts.filter(_=>!!App.grades[s.id]?.[STUDENTS.indexOf(_)]).length}/${sts.length}</span>
+    <span class="hbadge">✅ ${sts.filter(_=>{const i=STUDENTS.indexOf(_);return !!(isCondottaParziale?App.condottaParziale[App.teacher.id]?.[i]:App.grades[s.id]?.[i]);}).length}/${sts.length}</span>
   </div>
   ${sts.length===0?`<div class="info-box info-yellow">⚠️ Nessun alunno assegnato.</div>`:""}
   <div class="grade-list">
     ${sts.map(st=>{
       const i=STUDENTS.indexOf(st);
-      const saved=App.grades[App.subjId]?.[i];
+      const saved=getDisplayEntry(i);
       const ev=App.edits[i];
       const val=ev!==undefined?ev:(saved?.value||"");
       const isEd=ev!==undefined&&ev!==(saved?.value||"");
@@ -1128,18 +1247,18 @@ ${isCondotta&&canEditCondotta?`<div class="info-box info-yellow" style="margin:8
       if(effectiveReadOnly){
         return`<div class="st-row" style="background:${rowBg}">
           <div class="s-num">${st.num}</div>
-          <div class="s-name">${fmtName(st.name)}</div>
+          <div class="s-name">${fmtName(st.name)}${isCondotta?mediaCondottaInfo(i):""}</div>
           <div style="font-size:20px;font-weight:800;min-width:50px;text-align:center;color:${isSav?gradeColor(saved.value):"#CBD5E1"}">${isSav?saved.value:"—"}</div>
         </div>`;
       }
       return`<div class="st-row" style="background:${rowBg}">
         <div class="s-num">${st.num}</div>
-        <div class="s-name">${fmtName(st.name)}</div>
+        <div class="s-name">${fmtName(st.name)}${isCondottaParziale?mediaCondottaInfo(i):""}</div>
         <div class="grade-ctrl">
           <input class="g-inp${isEd?" edit":""}" data-i="${i}"
             style="${isSav&&!isEd?"color:"+gradeColor(saved.value)+";border-color:"+gradeColor(saved.value)+"55":""}"
             type="text" inputmode="decimal" value="${val}" placeholder="—" autocomplete="off">
-          <button class="btn-nc" data-nc="${i}">N.C.</button>
+          ${!isCondotta?`<button class="btn-nc" data-nc="${i}">N.C.</button>`:""}
           ${isSav&&!isEd
             ?`<button class="btn-del" data-del="${i}">✕</button>`
             :`<button class="btn-ok${isSav?" saved":""}" data-ok="${i}">${isSav?"✓":"→"}</button>`}
@@ -1156,7 +1275,7 @@ ${isCondotta&&canEditCondotta?`<div class="info-box info-yellow" style="margin:8
       inp.addEventListener("input",function(){App.edits[i]=this.value.trim();this.classList.toggle("edit",!!this.value.trim());});
       inp.addEventListener("keydown",function(e){
         if(e.key==="Enter"){
-          confirmGrade(i);
+          isCondottaParziale?confirmCondottaParziale(i):confirmGrade(i);
           setTimeout(()=>{
             const cur=sts.indexOf(sts.find(s=>STUDENTS.indexOf(s)===i));
             const next=sts[cur+1];
@@ -1165,9 +1284,14 @@ ${isCondotta&&canEditCondotta?`<div class="info-box info-yellow" style="margin:8
         }
       });
     });
-    $$(".btn-ok[data-ok]").forEach(btn=>{btn.addEventListener("click",function(){confirmGrade(parseInt(this.dataset.ok));});});
-    $$(".btn-del[data-del]").forEach(btn=>{btn.addEventListener("click",function(){deleteGrade(App.subjId,parseInt(this.dataset.del));});});
-    $$(".btn-nc[data-nc]").forEach(btn=>{btn.addEventListener("click",function(){const i=parseInt(this.dataset.nc);App.edits[i]="NC";confirmGrade(i);});});
+    if(isCondottaParziale){
+      $$(".btn-ok[data-ok]").forEach(btn=>{btn.addEventListener("click",function(){confirmCondottaParziale(parseInt(this.dataset.ok));});});
+      $$(".btn-del[data-del]").forEach(btn=>{btn.addEventListener("click",function(){deleteCondottaParziale(parseInt(this.dataset.del));});});
+    } else {
+      $$(".btn-ok[data-ok]").forEach(btn=>{btn.addEventListener("click",function(){confirmGrade(parseInt(this.dataset.ok));});});
+      $$(".btn-del[data-del]").forEach(btn=>{btn.addEventListener("click",function(){deleteGrade(App.subjId,parseInt(this.dataset.del));});});
+      $$(".btn-nc[data-nc]").forEach(btn=>{btn.addEventListener("click",function(){const i=parseInt(this.dataset.nc);App.edits[i]="NC";confirmGrade(i);});});
+    }
   }
 }
 
@@ -1238,12 +1362,12 @@ function renderAdminMaterie(){
         const bg=pct===100?"#ECFDF5":pct>0?"#EFF6FF":"#F8FAFC";
         const isCond=!!s.conductaOnly;
         // Tutor: can enter and edit all subjects. Segreteria: can enter and view (read-only handled in renderGrades)
-        const clickable=App.teacher.isAdmin||App.teacher.isTutor||App.teacher.isSegreteria;
+        const clickable=App.teacher.isAdmin||App.teacher.isTutor||App.teacher.isSegreteria||(!isCond);
         return`<div class="st-mgmt" ${isCond?`style="background:#F5F3FF11;border-left:3px solid #7C3AED"`:""}>
           <div class="row-btn" style="flex:1;padding:10px 0;gap:8px;display:flex;align-items:center;cursor:${clickable?"pointer":"default"}" ${clickable?`data-sid="${s.id}"`:""}>
             <div class="row-icon" style="width:32px;height:32px;font-size:15px">${s.emoji}</div>
             <div class="row-body">
-              <div class="row-name" style="font-size:12px;color:${isCond?"#7C3AED":"inherit"}">${s.label}${isCond?` <span style="font-size:10px;background:#F5F3FF;color:#7C3AED;border-radius:4px;padding:1px 5px">Solo Admin/Tutor</span>`:""}</div>
+              <div class="row-name" style="font-size:12px;color:${isCond?"#7C3AED":"inherit"}">${s.label}${isCond?` <span style="font-size:10px;background:#F5F3FF;color:#7C3AED;border-radius:4px;padding:1px 5px">Media dei docenti</span>`:""}</div>
               <div class="row-meta">
                 ${isCond?"Voto di condotta":docNameOf(s.id)?`👤 ${docNameOf(s.id)}${App.docenteMaterie[s.id]?` <span style="font-size:9px;background:#FEF3C7;color:#92400E;border-radius:3px;padding:1px 4px">override</span>`:""}`:`<span style="color:#EF4444;font-weight:700">⚠️ Nessun docente</span>`}
                 &nbsp;· ${done}/${sts.length}

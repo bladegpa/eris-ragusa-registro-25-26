@@ -162,5 +162,6 @@ const App={
   trasferiti_date:{},  // {idx: "DD-MM-YYYY"} — date di trasferimento
   fbPrefix:"",    // "" per 1E, "1D/" per 1D — isola i nodi Firebase per classe
   currentClass:"1E",  // classe attualmente attiva
+  condottaParziale:{}, // {teacherId: {studentIdx: {value,ts,docente}}} — voti condotta parziali
 };
 

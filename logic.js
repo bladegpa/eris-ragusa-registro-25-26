@@ -324,8 +324,10 @@ function startSync(){
   });
   // Sync pins
   fbRef("pins").on("value",snap=>{const v=snap.exists()?snap.val():{};Object.assign(App.pins,v);});
+  // Sync voti condotta parziali (uno per docente)
+  fbRef("condotta_parziale").on("value",snap=>{App.condottaParziale=snap.exists()?snap.val():{};if(App.page!=="login")renderPage();});
 }
-function stopSync(){if(DB){try{fbRef("grades").off();fbRef("dimessi").off();fbRef("corsiStudenti").off();fbRef("corsiMaterie").off();fbRef("docenteMaterie").off();fbRef("accessLog").off();fbRef("ammissioni").off();fbRef("dimissioni_date").off();fbRef("trasferiti").off();fbRef("trasferiti_date").off();fbRef("customTeachers").off();fbRef("pins").off();}catch(e){}} App.fbL=null;}
+function stopSync(){if(DB){try{fbRef("grades").off();fbRef("dimessi").off();fbRef("corsiStudenti").off();fbRef("corsiMaterie").off();fbRef("docenteMaterie").off();fbRef("accessLog").off();fbRef("ammissioni").off();fbRef("dimissioni_date").off();fbRef("trasferiti").off();fbRef("trasferiti_date").off();fbRef("customTeachers").off();fbRef("pins").off();fbRef("condotta_parziale").off();}catch(e){}} App.fbL=null;}
 // ─── Helper Firebase con prefisso classe ────────────────────────────────────
 // Tutti i nodi Firebase classe-specifici passano per fbRef.
 // 1E: prefisso "" → nodi a radice (compatibilità totale)
@@ -370,7 +372,7 @@ function doLogout(){
   App.grades={};App.dimessi={};App.corsiStudenti={};App.corsiMaterie={};
   App.docenteMaterie={};App.customTeachers={};App.accessLog={};
   App.ammissioni={defaultDate:"",overrides:{}};App.dimissioni={};App.pins={};
-  App.trasferiti={};App.trasferiti_date={};
+  App.trasferiti={};App.trasferiti_date={};App.condottaParziale={};
   renderClassSelect();
 }
 
@@ -393,6 +395,56 @@ async function deleteGrade(subjId,idx){
   if(App.grades[subjId])delete App.grades[subjId][idx];
   await fbSet("grades/"+subjId+"/"+idx,null);
   toast("🗑️ Voto eliminato","ok");renderGrades();
+}
+
+// ─── Condotta parziale (voto del singolo docente) ────────────────────────────
+// Ogni docente salva il suo voto in condotta_parziale/{teacherId}/{idx}.
+// Dopo ogni salvataggio viene ricalcolata la media e scritta in grades/condotta.
+// Admin e Tutor scrivono direttamente in grades/condotta (override diretto).
+async function recalcCondottaMedia(idx){
+  const votes=[];
+  Object.values(App.condottaParziale||{}).forEach(tv=>{
+    const e=tv[idx];
+    if(e&&e.value){const n=parseFloat(String(e.value).replace(",","."));if(!isNaN(n)&&n>=1&&n<=10)votes.push(n);}
+  });
+  if(votes.length===0){
+    // nessun voto parziale → rimuovi solo se era calcolato dal sistema
+    const ex=App.grades["condotta"]?.[idx];
+    if(ex&&ex.docente==="sistema"){
+      if(!App.grades["condotta"])App.grades["condotta"]={};
+      delete App.grades["condotta"][idx];
+      await fbSet("grades/condotta/"+idx,null);
+    }
+    return;
+  }
+  const avg=Math.round(votes.reduce((a,b)=>a+b,0)/votes.length);
+  const entry={value:String(avg),docente:"sistema",ts:new Date().toISOString()};
+  if(!App.grades["condotta"])App.grades["condotta"]={};
+  App.grades["condotta"][idx]=entry;
+  await fbSet("grades/condotta/"+idx,entry);
+}
+async function confirmCondottaParziale(idx){
+  const val=(App.edits[idx]??"").trim();
+  if(!val){toast("⚠️ Inserisci un voto (1–10)","err");return;}
+  const n=parseFloat(val.replace(",","."));
+  if(isNaN(n)||n<1||n>10){toast("⚠️ Voto condotta: 1–10","err");return;}
+  const tid=App.teacher.id;
+  if(!App.condottaParziale[tid])App.condottaParziale[tid]={};
+  const entry={value:String(Math.round(n)),docente:tid,ts:new Date().toISOString()};
+  App.condottaParziale[tid][idx]=entry;
+  delete App.edits[idx];
+  await fbSet("condotta_parziale/"+tid+"/"+idx,entry);
+  await recalcCondottaMedia(idx);
+  toast("✅ Condotta "+fmtName(STUDENTS[idx].name)+" registrata","ok");
+  renderGrades();
+}
+async function deleteCondottaParziale(idx){
+  if(!confirm("Eliminare il voto condotta di "+fmtName(STUDENTS[idx].name)+"?"))return;
+  const tid=App.teacher.id;
+  if(App.condottaParziale[tid])delete App.condottaParziale[tid][idx];
+  await fbSet("condotta_parziale/"+tid+"/"+idx,null);
+  await recalcCondottaMedia(idx);
+  toast("🗑️ Voto condotta eliminato","ok");renderGrades();
 }
 async function toggleDimesso(idx){
   const was=!!App.dimessi[idx];
