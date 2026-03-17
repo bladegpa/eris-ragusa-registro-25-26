@@ -623,7 +623,7 @@ function buildHtmlCard(subj,st,gradeEntry){
 <table class="tb" style="margin-bottom:5px"><tr><td style="padding:3px 8px;font-size:11pt">
 <span class="lbl">ALLIEVO:</span>&nbsp;${alunno}&emsp;<span class="lbl">MATERIA:</span>&nbsp;<span style="color:#000">${materia}</span>
 </td></tr></table>
-<table class="tg" style="margin-bottom:4px">${gr("CONOSCENZE","Conoscenza specifica dei contenuti richiesti e rispetto della consegna.")}${gr("COMPETENZE","Correttezza e propriet\u00e0 nell\u2019uso della lingua.")}</table>
+<table class="tg" style="margin-bottom:4px">${gr("CONOSCENZE","Conoscenza specifica dei contenuti richiesti e rispetto della consegna.")}${gr("COMPETENZE","Correttezza e propriet\u00e0 nell\u2019uso della lingua.")}${gr("CAPACIT\u00c0","Capacit\u00e0 di sviluppare le questioni proposte. Originalit\u00e0 e creativit\u00e0.")}</table>
 <p class="sottotit">PROVE PRATICHE &ndash; area tecnico-professionale</p>
 <table class="tg" style="margin-bottom:5px">${gr("CONOSCENZE","Conoscenza degli argomenti.")}${gr("COMPETENZE","Uso appropriato della terminologia e degli strumenti della disciplina. Chiarezza di esposizione.")}${gr("CAPACIT\u00c0","Capacit\u00e0 di rielaborazione. Applicazione.")}</table>
 <div class="boxlbl">VALUTAZIONE FINALE SULLE COMPETENZE DI BASE E/O CAPACIT\u00c0 PROFESSIONALI RAGGIUNTE</div>
