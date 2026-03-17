@@ -586,7 +586,7 @@ async function buildDocxForStudent(subj,st,gradeEntry){
   return zip.generateAsync({type:"uint8array"});
 }
 
-function buildHtmlCard(subj,st,gradeEntry){
+function buildHtmlCard(subj,st,gradeEntry,isPratica){
   const val=gradeEntry.value;
   const ev=votoToValutazione(val);
   const alunno=fmtName(st.name);
@@ -624,8 +624,7 @@ function buildHtmlCard(subj,st,gradeEntry){
 <span class="lbl">ALLIEVO:</span>&nbsp;${alunno}&emsp;<span class="lbl">MATERIA:</span>&nbsp;<span style="color:#000">${materia}</span>
 </td></tr></table>
 <table class="tg" style="margin-bottom:4px">${gr("CONOSCENZE","Conoscenza specifica dei contenuti richiesti e rispetto della consegna.")}${gr("COMPETENZE","Correttezza e propriet\u00e0 nell\u2019uso della lingua.")}${gr("CAPACIT\u00c0","Capacit\u00e0 di sviluppare le questioni proposte. Originalit\u00e0 e creativit\u00e0.")}</table>
-<p class="sottotit">PROVE PRATICHE &ndash; area tecnico-professionale</p>
-<table class="tg" style="margin-bottom:5px">${gr("CONOSCENZE","Conoscenza degli argomenti.")}${gr("COMPETENZE","Uso appropriato della terminologia e degli strumenti della disciplina. Chiarezza di esposizione.")}${gr("CAPACIT\u00c0","Capacit\u00e0 di rielaborazione. Applicazione.")}</table>
+${isPratica?`<p class="sottotit">PROVE PRATICHE &ndash; area tecnico-professionale</p><table class="tg" style="margin-bottom:5px">${gr("CONOSCENZE","Conoscenza degli argomenti.")}${gr("COMPETENZE","Uso appropriato della terminologia e degli strumenti della disciplina. Chiarezza di esposizione.")}${gr("CAPACIT\u00c0","Capacit\u00e0 di rielaborazione. Applicazione.")}</table>`:""}
 <div class="boxlbl">VALUTAZIONE FINALE SULLE COMPETENZE DI BASE E/O CAPACIT\u00c0 PROFESSIONALI RAGGIUNTE</div>
 <p class="txt">${descF}</p>
 <p class="giudizio"><strong>GIUDIZIO FINALE SINTETICO</strong>: ${ev}&emsp;Voto&nbsp;<span style="font-size:22pt;font-weight:900">${val}</span></p>
@@ -855,7 +854,7 @@ ${tableRows}</tbody>
 </html>`;
 }
 
-async function exportSchedeZip(sid){
+async function exportSchedeZip(sid,isPratica){
   if(typeof JSZip==="undefined"){toast("❌ Libreria JSZip non caricata. Controlla la connessione.","err");return;}
   const subj=SUBJECTS.find(s=>s.id===sid);
   if(!subj){toast("❌ Materia non trovata","err");return;}
@@ -871,7 +870,7 @@ async function exportSchedeZip(sid){
       const bytes=await buildDocxForStudent(subj,st,entry);
       const safeName=st.name.replace(/[^A-Za-z0-9\s]/g,"").replace(/\s+/g,"_");
       outerZip.file("Scheda_"+safeName+"_"+subj.short+".docx",bytes);
-      htmlCards.push(buildHtmlCard(subj,st,entry));
+      htmlCards.push(buildHtmlCard(subj,st,entry,isPratica));
     }
     outerZip.file("Stampa_Schede.html",buildPrintHtml(subj,htmlCards));
     outerZip.file("Riepilogo_Voti_"+subj.short+".html",buildRiepilogoHtml(subj,graded));

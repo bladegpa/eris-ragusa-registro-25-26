@@ -1396,7 +1396,7 @@ function renderAdminMaterie(){
         </div>`;
       }).join("")}
     </div>`;
-  const bxls=$("#btn-xls");if(bxls)bxls.addEventListener("click",()=>{const wb=buildWB(SUBJECTS);XLSX.writeFile(wb,xlsFilename());toast("✅ Excel esportato!","ok");});
+  const bxls=$("#btn-xls");if(bxls)bxls.addEventListener("click",()=>{const wb=buildWB(null);XLSX.writeFile(wb,xlsFilename());toast("✅ Excel esportato!","ok");});
   const bmp=$("#btn-mat-print");if(bmp)bmp.addEventListener("click",exportGridHtml);
   if(App.teacher.isAdmin){
     const bpg=$("#btn-pagelle");if(bpg)bpg.addEventListener("click",exportPagelleZip);
@@ -1408,17 +1408,51 @@ function renderAdminMaterie(){
   }
   if(App.teacher.isAdmin){
     $$(".btn-assign-doc[data-assign]").forEach(btn=>{btn.addEventListener("click",function(e){e.stopPropagation();openAssignTeacherModal(this.dataset.assign);});});
-    $$(".btn-schede[data-schede]").forEach(btn=>{btn.addEventListener("click",function(e){e.stopPropagation();exportSchedeZip(this.dataset.schede);});});
+    $$(".btn-schede[data-schede]").forEach(btn=>{btn.addEventListener("click",function(e){e.stopPropagation();openSchedeTipoModal(this.dataset.schede);});});
   }
   $$("#admin-body [data-sid]").forEach(btn=>{btn.addEventListener("click",function(){App.subjId=this.dataset.sid;App.edits={};App.page="grades";renderGrades();});});
 }
 
+// ── Modal selezione tipo scheda (Teorica / Pratica) ──────────────────────────
+function openSchedeTipoModal(sid){
+  const subj=SUBJECTS.find(s=>s.id===sid);
+  if(!subj)return;
+  const existing=document.getElementById("modal-schede-tipo");
+  if(existing)existing.remove();
+  const modal=document.createElement("div");
+  modal.id="modal-schede-tipo";
+  modal.style.cssText="position:fixed;inset:0;background:rgba(0,0,0,.55);z-index:9999;display:flex;align-items:center;justify-content:center;padding:20px";
+  modal.innerHTML=`
+<div style="background:white;border-radius:18px;padding:24px 22px;max-width:360px;width:100%;box-shadow:0 20px 60px rgba(0,0,0,.35)">
+  <div style="font-size:20px;font-weight:900;color:#0F172A;margin-bottom:6px">📄 Tipo di Materia</div>
+  <div style="font-size:13px;color:#475569;margin-bottom:20px">Seleziona il tipo per <strong>${subj.label}</strong>. La scheda cambia la sezione <em>Prove Pratiche</em>.</div>
+  <div style="display:flex;flex-direction:column;gap:10px;margin-bottom:18px">
+    <button id="btn-tipo-teorica" style="display:flex;align-items:center;gap:14px;background:linear-gradient(135deg,#1E3A5F,#2563EB);border:none;border-radius:12px;padding:14px 16px;color:white;cursor:pointer;text-align:left">
+      <span style="font-size:26px">📝</span>
+      <div>
+        <div style="font-size:14px;font-weight:800">Materia TEORICA</div>
+        <div style="font-size:11px;opacity:.8;margin-top:2px">Solo Prove Scritte — senza sezione Prove Pratiche</div>
+      </div>
+    </button>
+    <button id="btn-tipo-pratica" style="display:flex;align-items:center;gap:14px;background:linear-gradient(135deg,#065F46,#059669);border:none;border-radius:12px;padding:14px 16px;color:white;cursor:pointer;text-align:left">
+      <span style="font-size:26px">🔧</span>
+      <div>
+        <div style="font-size:14px;font-weight:800">Materia PRATICA</div>
+        <div style="font-size:11px;opacity:.8;margin-top:2px">Prove Scritte + Prove Pratiche (area tecnico-professionale)</div>
+      </div>
+    </button>
+  </div>
+  <button id="btn-tipo-annulla" style="width:100%;background:#F1F5F9;border:none;border-radius:10px;padding:10px;font-size:13px;font-weight:700;color:#64748B;cursor:pointer">Annulla</button>
+</div>`;
+  document.body.appendChild(modal);
+  document.getElementById("btn-tipo-teorica").addEventListener("click",()=>{modal.remove();exportSchedeZip(sid,false);});
+  document.getElementById("btn-tipo-pratica").addEventListener("click",()=>{modal.remove();exportSchedeZip(sid,true);});
+  document.getElementById("btn-tipo-annulla").addEventListener("click",()=>modal.remove());
+  modal.addEventListener("click",e=>{if(e.target===modal)modal.remove();});
+}
 function renderAdminAlunni(){
   const el=$("#admin-body");
   const isT=!!App.teacher.isTutor;
-  const isRO=!!App.teacher.isSegreteria;
-  const isAdm=!!App.teacher.isAdmin;
-  const accN=STUDENTS.filter((_,i)=>corsS(i)===COURSE_TRACKS.track1.id&&!App.dimessi[i]&&!App.trasferiti[i]).length;
   const estN=STUDENTS.filter((_,i)=>corsS(i)===COURSE_TRACKS.track2.id&&!App.dimessi[i]&&!App.trasferiti[i]).length;
   const unN=STUDENTS.filter((_,i)=>!corsS(i)&&!App.dimessi[i]&&!App.trasferiti[i]).length;
   const nDim=dimN(),nTras=trasN();
@@ -1615,7 +1649,7 @@ function renderAdminRiepilogo(){
     <button class="btn-green" id="btn-xls2"><span style="font-size:20px">📥</span><div><div class="btn-lbl-big">Esporta Excel Completo</div><div class="btn-lbl-small">Tutti i voti · medie · voto finale</div></div></button>
     <button class="btn-print-grid" id="btn-grid-print"><span style="font-size:20px">🖨️</span><div><div class="btn-lbl-big">Stampa Griglia A4</div><div class="btn-lbl-small">HTML stampabile · 1 pagina landscape</div></div></button>
     ${App.teacher.isSegreteria?`<button class="btn-green" id="btn-backup-seg" style="background:linear-gradient(135deg,#0F172A,#1E3A5F)"><span style="font-size:20px">💾</span><div><div class="btn-lbl-big">BACKUP GENERALE</div><div class="btn-lbl-small">Esporta tutte le 5 classi in un unico Excel</div></div></button>`:""}`;
-  const b=$("#btn-xls2");if(b)b.addEventListener("click",()=>{const wb=buildWB(SUBJECTS);XLSX.writeFile(wb,xlsFilename());toast("✅ Excel esportato!","ok");});
+  const b=$("#btn-xls2");if(b)b.addEventListener("click",()=>{const wb=buildWB(null);XLSX.writeFile(wb,xlsFilename());toast("✅ Excel esportato!","ok");});
   const gp=$("#btn-grid-print");if(gp)gp.addEventListener("click",exportGridHtml);
   const bbs=$("#btn-backup-seg");if(bbs)bbs.addEventListener("click",buildBackupAllClasses);
 }
