@@ -563,9 +563,57 @@ function votoToDescFinale(v){
   return variants[Math.floor(Math.random()*variants.length)];
 }
 
+function votoToDescFinaleTeoria(v){
+  const map={
+    OTTIMO:[
+      "L\u2019acquisizione delle competenze di base nella disciplina si \u00e8 rivelata eccellente. L\u2019allievo ha dimostrato durante l\u2019intero percorso una comprensione profonda e organica di tutti i contenuti teorici affrontati, unita a una notevole capacit\u00e0 di rielaborazione critica e di sintesi personale. Ha pienamente raggiunto e superato gli obiettivi disciplinari programmati, evidenziando padronanza sicura della terminologia specifica e notevole chiarezza espositiva nelle verifiche scritte. I risultati conseguiti nelle prove di verifica collocano l\u2019allievo al massimo livello di eccellenza, configurando un profilo formativo di assoluto valore.",
+      "Il livello di acquisizione delle competenze teoriche raggiunte al termine del percorso \u00e8 eccellente. L\u2019allievo ha affrontato lo studio con metodo rigoroso, curiosit\u00e0 intellettuale e impegno costante, padroneggiando con sicurezza l\u2019intera gamma degli argomenti trattati e dimostrando una capacit\u00e0 di analisi e di collegamento tra i contenuti che va ben oltre le aspettative. Nelle prove scritte ha espresso con chiarezza e precisione concetti complessi, rivelando autonomia di pensiero e originalit\u00e0 nell\u2019impostazione delle risposte. Il profilo raggiunto al termine del percorso \u00e8 di assoluta eccellenza.",
+      "L\u2019allievo ha concluso il percorso disciplinare con risultati teorici di eccellenza, dimostrando una preparazione completa, solida e approfondita su tutti gli argomenti del programma. Le verifiche scritte hanno evidenziato una padronanza sicura dei contenuti, una terminologia precisa e un\u2019apprezzabile capacit\u00e0 di sviluppare in modo originale le questioni proposte. L\u2019impegno costante, la seriet\u00e0 nello studio individuale e la qualit\u00e0 dei contributi durante le attivit\u00e0 didattiche delineano un profilo formativo eccellente e una preparazione di assoluto livello.",
+      "Le competenze teoriche acquisite al termine del percorso si collocano su un livello di eccellenza. L\u2019allievo ha dimostrato di saper padroneggiare con sicurezza e profondit\u00e0 i contenuti disciplinari, esprimendosi nelle prove scritte con chiarezza, ricchezza argomentativa e notevole capacit\u00e0 critica. Ha sviluppato con efficacia le questioni proposte nelle verifiche, evidenziando originalit\u00e0 di pensiero e una solida formazione culturale. Il percorso di apprendimento si \u00e8 rivelato progressivo, costante e di qualit\u00e0 eccellente.",
+      "Il percorso di acquisizione delle conoscenze e competenze teoriche si \u00e8 concluso con esiti eccezionali. L\u2019allievo ha saputo costruire un bagaglio di conoscenze solido e articolato, dimostrando nelle verifiche scritte una capacit\u00e0 di rielaborazione personale e di sintesi efficace che supera le aspettative. La qualit\u00e0 delle risposte, la coerenza argomentativa e la chiarezza espositiva testimoniano una preparazione di livello superiore, che si distingue per profondit\u00e0 di analisi e per la capacit\u00e0 di sviluppare con originalit\u00e0 le tematiche affrontate.",
+      "L\u2019acquisizione dei contenuti teorici della disciplina \u00e8 avvenuta al pi\u00f9 alto livello. L\u2019allievo ha affrontato le attivit\u00e0 didattiche con motivazione autentica e metodo di studio efficace, raggiungendo una comprensione piena e approfondita di tutti gli argomenti del programma. Le prove scritte hanno evidenziato una capacit\u00e0 di argomentazione chiara e rigorosa, un uso corretto e ricco della terminologia disciplinare e una spiccata attitudine a sviluppare le questioni proposte con profondit\u00e0 e originalit\u00e0. Il profilo formativo delineato \u00e8 di assoluta eccellenza."
+    ],
+    DISTINTO:[
+      "L\u2019acquisizione delle competenze teoriche della disciplina \u00e8 stata molto buona. L\u2019allievo ha dimostrato un impegno costante e una partecipazione attiva durante il percorso formativo, comprendendo in modo solido e organico i contenuti del programma. Nelle verifiche scritte ha espresso i concetti con chiarezza e proprietà di linguaggio, mostrando buona capacit\u00e0 di analisi e di collegamento tra gli argomenti affrontati. Ha pienamente raggiunto gli obiettivi disciplinari programmati, evidenziando un metodo di studio efficace e una preparazione teorica affidabile e di buon livello.",
+      "Il percorso di acquisizione dei contenuti teorici si \u00e8 concluso con risultati molto positivi. L\u2019allievo ha affrontato le attivit\u00e0 didattiche con seriet\u00e0 e continuit\u00e0 di impegno, sviluppando una comprensione solida degli argomenti e una buona capacit\u00e0 di rielaborazione personale dei contenuti. Le prove scritte hanno evidenziato chiarezza espositiva, uso appropriato della terminologia e un\u2019apprezzabile attitudine a sviluppare le questioni proposte con autonomia. Il livello di preparazione teorica raggiunto al termine del percorso \u00e8 distinto e soddisfacente.",
+      "Le competenze teoriche acquisite al termine del percorso si attestano su un livello distinto. L\u2019allievo ha dimostrato durante le attivit\u00e0 formative una partecipazione attiva e un impegno regolare, comprendendo in modo approfondito la maggior parte dei contenuti disciplinari proposti. Nelle verifiche scritte ha espresso i concetti con precisione e sicurezza, evidenziando una buona capacit\u00e0 di analisi e di sintesi e una discreta originalit\u00e0 nello sviluppo delle questioni. Il profilo formativo delineato \u00e8 di buon livello, con una preparazione teorica solida e affidabile.",
+      "Il livello di acquisizione delle conoscenze teoriche \u00e8 risultato molto buono, con una comprensione solida e articolata della maggior parte degli argomenti del programma. L\u2019allievo ha dimostrato nelle prove scritte una buona padronanza dei contenuti, chiarezza nell\u2019esposizione e un apprezzabile sviluppo delle questioni proposte. La continuit\u00e0 dell\u2019impegno e la qualit\u00e0 del lavoro prodotto nelle verifiche delineano un profilo formativo distinto, con una preparazione teorica di sicuro valore.",
+      "L\u2019allievo ha concluso il percorso disciplinare con un\u2019acquisizione distinta delle competenze teoriche. Ha affrontato le unit\u00e0 didattiche con impegno e applicazione, sviluppando una comprensione organica dei contenuti e una buona capacit\u00e0 di utilizzo della terminologia specifica. Le prove scritte hanno rivelato chiarezza argomentativa e un\u2019apprezzabile attitudine a trattare le tematiche proposte con autonomia e coerenza. Il profilo teorico raggiunto \u00e8 di buona qualit\u00e0 e indica una solida base di partenza per ulteriori approfondimenti disciplinari.",
+      "Le conoscenze teoriche e le competenze disciplinari sviluppate nel corso del percorso si collocano su un livello distinto. L\u2019allievo ha dimostrato continuity\u00e0 nello studio, buona comprensione degli argomenti trattati e una discreta capacit\u00e0 di sviluppare in modo autonomo le questioni proposte nelle verifiche scritte. La qualit\u00e0 complessiva delle prove e la regolarit\u00e0 dell\u2019impegno delineano un profilo formativo di buon livello teorico."
+    ],
+    BUONO:[
+      "L\u2019acquisizione delle competenze teoriche della disciplina \u00e8 stata buona. L\u2019allievo ha dimostrato un impegno costante e una partecipazione adeguata durante il percorso formativo, raggiungendo una comprensione chiara dei principali argomenti del programma. Nelle verifiche scritte ha espresso i contenuti con discreta chiarezza e correttezza, evidenziando una capacit\u00e0 di applicazione accettabile delle conoscenze acquisite. Ha pienamente raggiunto gli obiettivi disciplinari programmati, mostrando un profilo di preparazione teorica buona e complessivamente soddisfacente.",
+      "Il percorso di acquisizione dei contenuti teorici si \u00e8 concluso con risultati buoni. L\u2019allievo ha affrontato le attivit\u00e0 didattiche con impegno e regolarit\u00e0, comprendendo in modo adeguato i contenuti fondamentali della disciplina. Le prove scritte hanno evidenziato una discreta padronanza degli argomenti, una terminologia generalmente corretta e un\u2019accettabile capacit\u00e0 di sviluppo delle questioni proposte. Il livello di preparazione teorica raggiunto al termine del percorso \u00e8 buono e soddisfacente.",
+      "Le competenze teoriche acquisite al termine del percorso si attestano su un livello buono. L\u2019allievo ha dimostrato durante le attivit\u00e0 formative un impegno regolare e una comprensione complessivamente buona degli argomenti disciplinari. Nelle verifiche scritte ha risposto con discreta chiarezza alle questioni proposte, evidenziando una preparazione adeguata e un utilizzo corretto, seppur non sempre approfondito, della terminologia specifica. Il profilo formativo delineato \u00e8 buono, con margini di ulteriore crescita sul piano della rielaborazione personale dei contenuti.",
+      "Il livello di acquisizione delle conoscenze teoriche \u00e8 risultato buono. L\u2019allievo ha seguito le attivit\u00e0 didattiche con continuit\u00e0 e ha dimostrato di aver compreso i contenuti principali del programma. Le prove scritte hanno evidenziato una discreta capacit\u00e0 espositiva e una preparazione generalmente adeguata, anche se lo sviluppo delle questioni pi\u00f9 articolate pu\u00f2 risultare ancora non pienamente approfondito. La preparazione teorica complessiva \u00e8 buona e corrispondente alle aspettative del percorso.",
+      "L\u2019allievo ha concluso il percorso disciplinare con un\u2019acquisizione buona delle competenze teoriche. Ha partecipato con impegno alle attivit\u00e0 formative, comprendendo i nuclei fondamentali della disciplina e dimostrando nelle verifiche scritte una discreta padronanza dei contenuti e una capacit\u00e0 espositiva adeguata. Il profilo teorico raggiunto \u00e8 positivo, con una preparazione di base solida che consente di affrontare con sufficiente autonomia le questioni tipiche della disciplina.",
+      "Le conoscenze teoriche sviluppate nel corso del percorso si collocano su un livello buono. L\u2019allievo ha mostrato impegno nel seguire le lezioni e nel confrontarsi con i contenuti disciplinari, raggiungendo una comprensione discreta degli argomenti e dimostrando nelle prove scritte una capacit\u00e0 di risposta generalmente corretta e coerente. Il profilo formativo teorico \u00e8 buono e in linea con gli obiettivi del percorso."
+    ],
+    SUFFICIENTE:[
+      "L\u2019acquisizione delle competenze teoriche della disciplina si \u00e8 rivelata sufficiente. L\u2019allievo ha raggiunto gli obiettivi minimi del programma, dimostrando una comprensione essenziale dei contenuti fondamentali della disciplina. Le verifiche scritte hanno evidenziato una preparazione di base accettabile, seppur con alcune lacune nella trattazione degli argomenti pi\u00f9 articolati e nella capacit\u00e0 di sviluppare con compiutezza le questioni proposte. Il profilo teorico raggiunto \u00e8 sufficiente, ma necessita di consolidamento e di un impegno pi\u00f9 costante nello studio individuale.",
+      "Il percorso di acquisizione dei contenuti teorici si \u00e8 concluso con risultati sufficienti. L\u2019allievo ha dimostrato una comprensione parziale degli argomenti trattati, riuscendo a raggiungere gli obiettivi minimi grazie a un impegno non sempre costante. Nelle prove scritte ha evidenziato una preparazione di base accettabile, con risposte talvolta incomplete o non del tutto sviluppate. Si raccomanda un maggiore approfondimento dei contenuti disciplinari per consolidare le conoscenze acquisite.",
+      "Le competenze teoriche acquisite al termine del percorso si collocano su un livello appena sufficiente. L\u2019allievo ha incontrato alcune difficolt\u00e0 nella comprensione degli argomenti pi\u00f9 complessi e nella rielaborazione personale dei contenuti. Nelle verifiche scritte ha dimostrato una conoscenza essenziale degli argomenti fondamentali, con risposte spesso sintetiche e non sempre pienamente sviluppate. Il raggiungimento degli obiettivi minimi \u00e8 stato conseguito, ma il profilo teorico richiede un impegno pi\u00f9 costante e sistematico.",
+      "Il livello di acquisizione delle conoscenze teoriche \u00e8 risultato sufficiente. L\u2019allievo ha raggiunto i requisiti minimi programmati dopo un percorso non privo di difficolt\u00e0, dimostrando nelle prove scritte una conoscenza di base degli argomenti, spesso limitata ai contenuti essenziali. Lo sviluppo delle questioni proposte nelle verifiche ha rivelato margini di miglioramento nella profondit\u00e0 di analisi e nella chiarezza espositiva. Si auspica un maggiore impegno nello studio per consolidare la preparazione raggiunta.",
+      "L\u2019allievo ha concluso il percorso disciplinare con risultati teorici sufficienti, raggiungendo gli obiettivi minimi grazie a un impegno progressivamente pi\u00f9 regolare nelle fasi conclusive. Le competenze teoriche acquisite sono di carattere essenziale e la capacit\u00e0 di sviluppare le questioni proposte nelle prove scritte risulta ancora parziale. Il livello di preparazione raggiunto soddisfa i requisiti minimi, ma richiede un consolidamento significativo attraverso uno studio pi\u00f9 continuativo e approfondito.",
+      "Le conoscenze teoriche sviluppate al termine del percorso si collocano su un livello sufficiente. L\u2019allievo ha dimostrato una comprensione essenziale dei contenuti principali della disciplina, con risposte nelle prove scritte generalmente accettabili ma non sempre pienamente articolate. Il profilo formativo teorico raggiunto soddisfa i requisiti minimi del percorso, pur evidenziando la necessit\u00e0 di un ulteriore approfondimento dei contenuti disciplinari."
+    ],
+    INSUFFICIENTE:[
+      "L\u2019acquisizione delle competenze teoriche della disciplina \u00e8 risultata insufficiente. L\u2019allievo ha manifestato un impegno inadeguato nello studio e una partecipazione discontinua alle attivit\u00e0 didattiche, con il risultato di non aver acquisito in modo sufficiente i contenuti disciplinari fondamentali. Le verifiche scritte hanno evidenziato lacune rilevanti nella comprensione degli argomenti e difficolt\u00e0 significative nello sviluppo delle questioni proposte. Il livello di preparazione teorica raggiunto non soddisfa gli obiettivi minimi programmati e richiede un intervento di recupero mirato.",
+      "Il percorso di acquisizione dei contenuti teorici si \u00e8 concluso con risultati insufficienti. L\u2019allievo non ha raggiunto gli obiettivi minimi del programma, evidenziando nelle verifiche scritte una preparazione lacunosa e difficolt\u00e0 persistenti nella comprensione e nella rielaborazione degli argomenti fondamentali della disciplina. La scarsa regolarit\u00e0 nello studio individuale e la partecipazione non costante alle attivit\u00e0 hanno contribuito a determinare un livello di preparazione teorica insufficiente. Si ritiene necessario un piano di recupero strutturato.",
+      "Le competenze teoriche acquisite al termine del percorso si collocano al di sotto della soglia minima richiesta. L\u2019allievo ha evidenziato lacune rilevanti nella comprensione degli argomenti disciplinari e una capacit\u00e0 limitata di sviluppare in modo compiuto le questioni proposte nelle prove scritte. L\u2019impegno nello studio \u00e8 risultato insufficiente rispetto alle richieste del percorso e il livello di preparazione teorica raggiunto non consente il soddisfacimento degli obiettivi minimi programmati. \u00c8 indispensabile un recupero sistematico dei contenuti fondamentali.",
+      "Il livello di acquisizione delle conoscenze teoriche \u00e8 risultato insufficiente. L\u2019allievo non ha raggiunto gli obiettivi minimi programmati, mostrando nelle prove scritte una comprensione frammentaria degli argomenti e rilevanti difficolt\u00e0 nell\u2019esposizione e nello sviluppo delle questioni proposte. Nonostante gli interventi di supporto attivati, la preparazione teorica complessiva rimane al di sotto del livello atteso. Si raccomanda un intervento di recupero e un impegno nello studio significativamente maggiore.",
+      "L\u2019allievo ha concluso il percorso con risultati teorici insufficienti, non raggiungendo gli obiettivi disciplinari minimi in pi\u00f9 aree del programma. Le verifiche scritte hanno evidenziato lacune rilevanti nella comprensione dei contenuti fondamentali e una limitata capacit\u00e0 di argomentazione e sviluppo delle questioni proposte. L\u2019impegno nello studio \u00e8 stato discontinuo e non adeguato alle richieste del percorso. Si ritiene indispensabile attivare un percorso di recupero personalizzato prima di qualsiasi ulteriore progresso nel percorso formativo.",
+      "Le conoscenze teoriche sviluppate nel corso del percorso si collocano al di sotto della soglia minima richiesta. L\u2019allievo ha mostrato difficolt\u00e0 persistenti nella comprensione e nella rielaborazione dei contenuti disciplinari, non riuscendo a conseguire gli obiettivi formativi minimi nonostante gli interventi di supporto predisposti. Il profilo di preparazione teorica al termine del percorso richiede un intervento formativo integrativo urgente e sistematico per colmare le lacune riscontrate."
+    ]
+  };
+  const variants=map[votoToValutazione(v)];
+  if(!variants)return"";
+  return variants[Math.floor(Math.random()*variants.length)];
+}
+
 function escXml(s){return String(s).replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;");}
 
-async function buildDocxForStudent(subj,st,gradeEntry){
+async function buildDocxForStudent(subj,st,gradeEntry,isPratica){
   const val=gradeEntry.value;
   const valutazione=votoToValutazione(val);
   const alunnoName=fmtName(st.name);
@@ -577,11 +625,24 @@ async function buildDocxForStudent(subj,st,gradeEntry){
   r("{{ALUNNO}}",escXml(alunnoName));
   r("{{DOCENTE}}",escXml(docenteName));
   r("{{MATERIA}}",escXml(materiaText));
-  r("{{VALUTAZIONE}}",escXml(valutazione));
   r("{{VOTO}}",escXml(String(val)));
   r("{{PROFILOINIZIALE}}",escXml(votoToProfiloText(val)));
   r("{{VALUTAZIONEINTERMEDIA}}",escXml(votoToValIntermedia(val)));
-  r("{{VALUTAZIONEFINALE}}",escXml(votoToDescFinale(val)));
+  r("{{VALUTAZIONEFINALE}}",escXml(isPratica?votoToDescFinale(val):votoToDescFinaleTeoria(val)));
+  // {{VALUTAZIONE}} appare 10 volte: [0-5]=griglia scritti+pag1, [6-8]=PROVE PRATICHE, [9]=giudizio finale
+  // Se materia teorica, le occorrenze 6-8 (PROVE PRATICHE) diventano "———"
+  if(!isPratica){
+    const tag="{{VALUTAZIONE}}";
+    const blank=escXml("\u2014\u2014\u2014");
+    let count=0;
+    xml=xml.replace(/\{\{VALUTAZIONE\}\}/g,()=>{
+      const idx=count++;
+      if(idx>=6&&idx<=8)return blank;
+      return escXml(valutazione);
+    });
+  } else {
+    r("{{VALUTAZIONE}}",escXml(valutazione));
+  }
   zip.file("word/document.xml",xml);
   return zip.generateAsync({type:"uint8array"});
 }
@@ -592,13 +653,16 @@ function buildHtmlCard(subj,st,gradeEntry,isPratica){
   const alunno=fmtName(st.name);
   const docente=docFullOf(subj.id)||"\u2014";
   const materia=subj.label+(subj.ore>0?" \u2014 "+subj.ore+"h":"");
-  const descF=votoToDescFinale(val);
+  const descF=isPratica?votoToDescFinale(val):votoToDescFinaleTeoria(val);
   const profilo=votoToProfiloText(val);
   const intermed=votoToValIntermedia(val);
 
   const gr=(ind,desc)=>`<tr>
 <td class="gi">${ind}</td><td class="gd">${desc}</td></tr>
 <tr><td colspan="2" class="gj">Giudizio:&nbsp;<strong>${ev}</strong></td></tr>`;
+  const grBlank=(ind,desc)=>`<tr>
+<td class="gi">${ind}</td><td class="gd">${desc}</td></tr>
+<tr><td colspan="2" class="gj">Giudizio:&nbsp;<strong style="color:#94A3B8">&mdash;&mdash;&mdash;</strong></td></tr>`;
   return`<div class="wrap">
 <div class="pg">
 <div class="ph"><img src="${IMG_ASSET_0}" alt="ERIS intestazione logos"></div><div class="pb">
@@ -624,7 +688,8 @@ function buildHtmlCard(subj,st,gradeEntry,isPratica){
 <span class="lbl">ALLIEVO:</span>&nbsp;${alunno}&emsp;<span class="lbl">MATERIA:</span>&nbsp;<span style="color:#000">${materia}</span>
 </td></tr></table>
 <table class="tg" style="margin-bottom:4px">${gr("CONOSCENZE","Conoscenza specifica dei contenuti richiesti e rispetto della consegna.")}${gr("COMPETENZE","Correttezza e propriet\u00e0 nell\u2019uso della lingua.")}${gr("CAPACIT\u00c0","Capacit\u00e0 di sviluppare le questioni proposte. Originalit\u00e0 e creativit\u00e0.")}</table>
-${isPratica?`<p class="sottotit">PROVE PRATICHE &ndash; area tecnico-professionale</p><table class="tg" style="margin-bottom:5px">${gr("CONOSCENZE","Conoscenza degli argomenti.")}${gr("COMPETENZE","Uso appropriato della terminologia e degli strumenti della disciplina. Chiarezza di esposizione.")}${gr("CAPACIT\u00c0","Capacit\u00e0 di rielaborazione. Applicazione.")}</table>`:""}
+<p class="sottotit">PROVE PRATICHE &ndash; area tecnico-professionale</p>
+<table class="tg" style="margin-bottom:5px">${isPratica?gr("CONOSCENZE","Conoscenza degli argomenti."):grBlank("CONOSCENZE","Conoscenza degli argomenti.")}${isPratica?gr("COMPETENZE","Uso appropriato della terminologia e degli strumenti della disciplina. Chiarezza di esposizione."):grBlank("COMPETENZE","Uso appropriato della terminologia e degli strumenti della disciplina. Chiarezza di esposizione.")}${isPratica?gr("CAPACIT\u00c0","Capacit\u00e0 di rielaborazione. Applicazione."):grBlank("CAPACIT\u00c0","Capacit\u00e0 di rielaborazione. Applicazione.")}</table>
 <div class="boxlbl">VALUTAZIONE FINALE SULLE COMPETENZE DI BASE E/O CAPACIT\u00c0 PROFESSIONALI RAGGIUNTE</div>
 <p class="txt">${descF}</p>
 <p class="giudizio"><strong>GIUDIZIO FINALE SINTETICO</strong>: ${ev}&emsp;Voto&nbsp;<span style="font-size:22pt;font-weight:900">${val}</span></p>
@@ -867,7 +932,7 @@ async function exportSchedeZip(sid,isPratica){
     for(const st of graded){
       const i=STUDENTS.indexOf(st);
       const entry=App.grades[sid][i];
-      const bytes=await buildDocxForStudent(subj,st,entry);
+      const bytes=await buildDocxForStudent(subj,st,entry,isPratica);
       const safeName=st.name.replace(/[^A-Za-z0-9\s]/g,"").replace(/\s+/g,"_");
       outerZip.file("Scheda_"+safeName+"_"+subj.short+".docx",bytes);
       htmlCards.push(buildHtmlCard(subj,st,entry,isPratica));
