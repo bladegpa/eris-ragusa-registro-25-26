@@ -1453,6 +1453,9 @@ function openSchedeTipoModal(sid){
 function renderAdminAlunni(){
   const el=$("#admin-body");
   const isT=!!App.teacher.isTutor;
+  const isAdm=!!App.teacher.isAdmin;
+  const isRO=!!App.teacher.isSegreteria;
+  const accN=STUDENTS.filter((_,i)=>corsS(i)===COURSE_TRACKS.track1.id&&!App.dimessi[i]&&!App.trasferiti[i]).length;
   const estN=STUDENTS.filter((_,i)=>corsS(i)===COURSE_TRACKS.track2.id&&!App.dimessi[i]&&!App.trasferiti[i]).length;
   const unN=STUDENTS.filter((_,i)=>!corsS(i)&&!App.dimessi[i]&&!App.trasferiti[i]).length;
   const nDim=dimN(),nTras=trasN();

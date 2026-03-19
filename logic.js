@@ -251,12 +251,12 @@ function myTotal(){return mySubjects().reduce((a,s)=>a+cntG(s),0);}
 
 function calcMedia(idx,cols){
   const v=[];
-  (cols||SUBJECTS).forEach(s=>{const e=App.grades[s.id]?.[idx];if(e){const sv=String(e.value).trim().toUpperCase();const n=sv==="NC"?2:parseFloat(sv.replace(",","."));if(!isNaN(n))v.push(n);}});
+  (cols||SUBJECTS).forEach(s=>{const e=App.grades[s.id]?.[idx];if(e){const sv=String(e.value).trim().toUpperCase();const n=sv==="NC"?4:parseFloat(sv.replace(",","."));if(!isNaN(n))v.push(n);}});
   return v.length?v.reduce((a,b)=>a+b)/v.length:null;
 }
 function calcMP(idx,cols){
   let sv=0,sw=0;
-  (cols||SUBJECTS).forEach(s=>{const e=App.grades[s.id]?.[idx];if(e){const str=String(e.value).trim().toUpperCase();const n=str==="NC"?2:parseFloat(str.replace(",","."));if(!isNaN(n)){sv+=n*s.ore;sw+=s.ore;}}});
+  (cols||SUBJECTS).forEach(s=>{const e=App.grades[s.id]?.[idx];if(e){const str=String(e.value).trim().toUpperCase();const n=str==="NC"?4:parseFloat(str.replace(",","."));if(!isNaN(n)){sv+=n*s.ore;sw+=s.ore;}}});
   return sw>0?sv/sw:null;
 }
 
