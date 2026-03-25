@@ -1329,3 +1329,113 @@ async function exportPagelleZip(){
     toast("✅ "+attivi.length+" pagelle esportate!","ok");
   }catch(e){console.error(e);toast("❌ Errore pagelle: "+e.message,"err");}
 }
+
+// ─── Descrizione testo voto di condotta ─────────────────────────────────────
+function condottaToDescrizione(v){
+  if(!v||v==="—")return"";
+  const n=parseFloat(String(v).replace(",","."));
+  if(isNaN(n))return"";
+  if(n>=10)return"Comportamento esemplare, piena assunzione di responsabilità, partecipazione attiva e costruttiva, rispetto totale delle regole e dei membri della comunità scolastica.";
+  if(n>=9)return"Comportamento maturo e responsabile, partecipazione corretta e costante. Lo studente dimostra autonomia e rispetto delle regole, contribuendo positivamente al clima di classe.";
+  if(n>=8)return"Comportamento corretto e responsabile, con una buona partecipazione, seppur con margini di crescita nella piena maturazione personale o nello spirito di iniziativa.";
+  if(n>=7)return"Comportamento sostanzialmente corretto, ma discontinuo. Indica un'autonomia parziale e la necessità di una maggiore attenzione ai doveri scolastici e alle regole di convivenza.";
+  if(n>=6.5)return"Rispetto delle regole solo formale o parziale. Necessita di maggiore attenzione ai doveri e alle regole di convivenza.";
+  if(n>=6)return"Comportamento minimo indispensabile. Lo studente rispetta le regole solo in modo formale o parziale. Secondo le nuove norme (Legge 150/2024), un voto di 6 comporta la sospensione del giudizio con la necessità di svolgere un elaborato critico su cittadinanza e convivenza civile.";
+  return"Comportamento gravemente scorretto. Secondo le normative vigenti, un voto inferiore a 6 comporta la non ammissione alla classe successiva o all'esame di Stato.";
+}
+
+// ─── Pagellino intermedio HTML (senza DOCX, senza colonna DOCENTE) ───────────
+function buildHtmlPagellina(st,idx){
+  const subjCols=SUBJECTS.filter(s=>!s.conductaOnly&&studentHasSubject(idx,s.id));
+  const mp=calcMP(idx,subjCols);
+  const mpx10=mp!==null?Math.round(mp*10):null;
+  const giudizio=mpToGiudizioSintetico(mp);
+  const condEntry=App.grades["condotta"]?.[idx];
+  const votoCond=condEntry?condEntry.value:"—";
+  const condDesc=condottaToDescrizione(votoCond);
+  const alunno=fmtName(st.name);
+  const giudizioColor=v=>{
+    if(v==="OTTIMO")return"#059669";if(v==="DISTINTO")return"#0369A1";
+    if(v==="BUONO")return"#D97706";if(v==="SUFFICIENTE")return"#CA8A04";return"#DC2626";
+  };
+  const mpColor=mpx10===null?"#94A3B8":mpx10>=60?"#059669":mpx10>=50?"#D97706":"#DC2626";
+  const today=new Date().toLocaleDateString("it-IT");
+
+  const righeHtml=subjCols.map(s=>{
+    const e=App.grades[s.id]?.[idx];
+    const voto=e?e.value:"—";
+    const nomeModulo=s.label;
+    const vn=String(voto).trim().toUpperCase();
+    const vNum=vn==="NC"?4:parseFloat(vn.replace(",","."));
+    const vColor=isNaN(vNum)?"#475569":vNum<6?"#DC2626":vNum<7?"#CA8A04":vNum<9?"#D97706":"#059669";
+    const vBg=isNaN(vNum)?"#EFF6FF":vNum<6?"#FEF2F2":vNum<7?"#FEFCE8":vNum<9?"#FFFBEB":"#ECFDF5";
+    return`<tr>
+      <td style="padding:1.5px 5px;font-size:7.5pt;border:0.5pt solid #CBD5E1;vertical-align:middle">${nomeModulo}</td>
+      <td style="padding:1.5px 3px;font-size:7.5pt;border:0.5pt solid #CBD5E1;text-align:center;color:#475569;vertical-align:middle;white-space:nowrap">${s.ore>0?s.ore:"—"}</td>
+      <td style="padding:1.5px 3px;font-size:9pt;font-weight:800;border:0.5pt solid #CBD5E1;text-align:center;color:${vColor};background:${vBg};vertical-align:middle;white-space:nowrap">${voto}</td>
+    </tr>`;
+  }).join("");
+
+  return`<div class="wrap">
+<div class="pg">
+<div class="ph"><img src="${IMG_ASSET_0}" alt="ERIS intestazione logos"></div>
+<div class="pb" style="display:flex;flex-direction:column">
+  <p class="h1c">ASSOCIAZIONE ERIS DI RAGUSA &ndash; IEFP &ndash; ANNO ${ANNO}</p>
+  <p class="h2c">Corso: ${COURSE_TRACKS.courseLabel} &nbsp;&nbsp; ${CLASSE} &nbsp;&nbsp; ${COURSE_TRACKS.courseCode}</p>
+  <p class="titolo">PAGELLINO INTERMEDIO</p>
+  <table class="tb" style="margin-bottom:4px"><tr><td style="padding:3px 8px">
+    <span class="lbl">ALLIEVO:</span>&nbsp;${alunno}
+  </td></tr></table>
+  <div style="display:flex;gap:8px;align-items:flex-start;flex:1;min-height:0">
+    <table style="width:58%;border-collapse:collapse;font-family:Arial,sans-serif">
+      <tr style="background:#0F2557;color:white">
+        <th style="padding:3px 5px;font-size:7.5pt;text-align:left;border:0.5pt solid #0F2040">MODULO DI FORMAZIONE</th>
+        <th style="padding:3px 4px;font-size:7.5pt;text-align:center;border:0.5pt solid #0F2040;width:30px">ORE</th>
+        <th style="padding:3px 4px;font-size:7.5pt;text-align:center;border:0.5pt solid #0F2040;width:36px">VOTO</th>
+      </tr>
+      ${righeHtml}
+    </table>
+    <div style="flex:1;border:1pt solid #CBD5E1;padding:10px 12px;text-align:center;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:6px;background:#FAFAFA;align-self:stretch">
+      <div style="font-size:10pt;font-weight:800;letter-spacing:1px;color:#0F2557">${alunno}</div>
+      <hr style="width:80%;border:none;border-top:1px solid #CBD5E1;margin:2px 0">
+      <div style="font-size:8pt;color:#64748B">Giudizio Intermedio 50%</div>
+      <div style="font-size:18pt;font-weight:900;color:${giudizioColor(giudizio)};margin:2px 0">${giudizio}</div>
+      <hr style="width:80%;border:none;border-top:1px solid #CBD5E1;margin:2px 0">
+      <div style="font-size:8pt;color:#64748B">Votazione Intermedia:</div>
+      <div style="font-size:20pt;font-weight:900;color:${mpColor}">${mpx10!==null?mpx10+" / 100":"—"}</div>
+      <hr style="width:80%;border:none;border-top:1px solid #CBD5E1;margin:2px 0">
+      <div style="font-size:8pt;color:#64748B">Voto di condotta:</div>
+      <div style="font-size:18pt;font-weight:900;color:${gradeColor(votoCond)};margin:0">${votoCond}</div>
+      ${condDesc?`<div style="font-size:7pt;color:#475569;margin-top:2px;text-align:left;line-height:1.4;padding:4px 6px;background:#F8FAFC;border-radius:6px;border:0.5pt solid #E2E8F0">${condDesc}</div>`:""}
+    </div>
+  </div>
+  <div class="firme" style="margin-top:8px">
+    <span><strong>Ragusa,</strong> ${today}</span>
+    <span><strong>La Segreteria</strong>: ___________________________</span>
+  </div>
+</div>
+<div class="pf"><img class="fi" src="${IMG_ASSET_1}" alt="ISO 9001"><div class="ft"><b>ERIS ENTE DEL TERZO SETTORE</b>Sede legale: via Salvatore Paola, 14/a &ndash; 95125 Catania | tel./fax: 095433940 | didattica.ct@erisformazione.it | amministrazione.ct@erisformazione.it<br>Associazione riconosciuta, iscrizione n&deg;&nbsp;293979 C.C.I.A.A. di Catania | CF: 97180200822 | info@pec.erisformazione.it | www.erisformazione.it</div><img class="fi" src="${IMG_ASSET_2}" alt="OHSAS 18001"></div>
+</div>
+</div>`;
+}
+
+function exportPagellineIntermHtml(){
+  const attivi=activeStudents();
+  if(!attivi.length){toast("⚠️ Nessun alunno attivo","err");return;}
+  toast("⏳ Generazione pagellini intermedi...","info");
+  try{
+    const htmlCards=attivi.map(st=>buildHtmlPagellina(st,STUDENTS.indexOf(st)));
+    // Riusa buildPrintHtmlPagelle sostituendo il titolo
+    const html=buildPrintHtmlPagelle(htmlCards).replace("Pagelle Scolastiche","Pagellini Intermedi").replace("PAGELLA SCOLASTICA","PAGELLINO INTERMEDIO");
+    const blob=new Blob([html],{type:"text/html;charset=utf-8"});
+    const url=URL.createObjectURL(blob);
+    const win=window.open(url,"_blank");
+    if(!win){
+      downloadBlob(blob,"Pagellini_Intermedi_"+CLASSE+"_"+ANNO.replace("/","-")+".html");
+      toast("📥 File scaricato — aprilo nel browser per stampare","info");
+    }else{
+      setTimeout(()=>URL.revokeObjectURL(url),8000);
+      toast("✅ "+attivi.length+" pagellini intermedi generati!","ok");
+    }
+  }catch(e){console.error(e);toast("❌ Errore: "+e.message,"err");}
+}

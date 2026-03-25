@@ -1354,6 +1354,7 @@ function renderAdminMaterie(){
     ${isPrivileged()?`<button class="btn-green" id="btn-xls"><span style="font-size:22px">📥</span><div><div class="btn-lbl-big">Esporta Excel Completo</div><div class="btn-lbl-small">Tutte le materie · medie · colori</div></div></button>`:""}
     <button class="btn-print-grid" id="btn-mat-print"><span style="font-size:22px">🖨️</span><div><div class="btn-lbl-big">Stampa Griglia A4</div><div class="btn-lbl-small">HTML stampabile · 1 pagina landscape</div></div></button>
     ${App.teacher.isAdmin?`<button class="btn-print-grid" id="btn-pagelle" style="background:linear-gradient(135deg,#7C3AED,#5B21B6)"><span style="font-size:22px">📋</span><div><div class="btn-lbl-big">Genera Pagelle</div><div class="btn-lbl-small">DOCX + HTML · tutti gli alunni attivi</div></div></button>`:""}
+    ${App.teacher.isAdmin?`<button class="btn-print-grid" id="btn-pagelle-interm" style="background:linear-gradient(135deg,#0369A1,#0F2557)"><span style="font-size:22px">📄</span><div><div class="btn-lbl-big">Pagellino Intermedio</div><div class="btn-lbl-small">Solo HTML · senza DOCX · 50% del percorso</div></div></button>`:""}
     ${App.teacher.isAdmin?`<button class="btn-import" id="btn-import"><span style="font-size:22px">📤</span><div><div class="btn-lbl-big">Importa Voti da File</div><div class="btn-lbl-small">CSV o Excel — aggiorna i voti dal file</div></div></button>`:""}
     ${isT?`<div class="info-box info-green">✏️ <strong>Tutor</strong> — Tocca una materia per inserire o modificare i voti di tutti gli alunni della classe.</div>`:!isRO?`<div class="info-box info-blue">Assegna ogni materia al corso giusto. Le materie <strong>Comuni</strong> sono visibili per tutti gli alunni; le esclusive solo per il corso assegnato.</div>`:""}
     ${App.teacher.isAdmin?(()=>{const noDoc=SUBJECTS.filter(s=>!s.conductaOnly&&!docNameOf(s.id));return noDoc.length>0?`<div class="info-box info-yellow">⚠️ <strong>${noDoc.length} materie senza docente assegnato:</strong> ${noDoc.map(s=>s.short).join(", ")} — usa il pulsante <strong>👤 Assegna docente</strong> su ciascuna.</div>`:"";})():""}
@@ -1400,6 +1401,7 @@ function renderAdminMaterie(){
   const bmp=$("#btn-mat-print");if(bmp)bmp.addEventListener("click",exportGridHtml);
   if(App.teacher.isAdmin){
     const bpg=$("#btn-pagelle");if(bpg)bpg.addEventListener("click",exportPagelleZip);
+    const bpi=$("#btn-pagelle-interm");if(bpi)bpi.addEventListener("click",exportPagellineIntermHtml);
     const bi=$("#btn-import");if(bi)bi.addEventListener("click",openImportModal);
   }
   $$(".btn-subj-lock[data-lock]").forEach(btn=>{btn.addEventListener("click",function(e){e.stopPropagation();toggleSubjectLock(this.dataset.lock);});});
