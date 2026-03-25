@@ -959,10 +959,11 @@ function getPagellaB64(){
 // Giudizio sintetico dalla media ponderata (scala 0-10)
 function mpToGiudizioSintetico(mp){
   if(mp===null||mp===undefined)return"NON CLASSIFICABILE";
-  if(mp>=9)return"OTTIMO";
-  if(mp>=8)return"DISTINTO";
-  if(mp>=7)return"BUONO";
-  if(mp>=6)return"SUFFICIENTE";
+  const mpx10=Math.round(mp*10);
+  if(mpx10>=90)return"OTTIMO";
+  if(mpx10>=80)return"DISTINTO";
+  if(mpx10>=70)return"BUONO";
+  if(mpx10>=60)return"SUFFICIENTE";
   return"INSUFFICIENTE";
 }
 
@@ -1382,7 +1383,7 @@ function buildHtmlPagellina(st,idx){
 <div class="pb" style="display:flex;flex-direction:column">
   <p class="h1c">ASSOCIAZIONE ERIS DI RAGUSA &ndash; IEFP &ndash; ANNO ${ANNO}</p>
   <p class="h2c">Corso: ${COURSE_TRACKS.courseLabel} &nbsp;&nbsp; ${CLASSE} &nbsp;&nbsp; ${COURSE_TRACKS.courseCode}</p>
-  <p class="titolo">PAGELLINO INTERMEDIO</p>
+  <p class="titolo">PAGELLINO INTERMEDIO 50%</p>
   <table class="tb" style="margin-bottom:4px"><tr><td style="padding:3px 8px">
     <span class="lbl">ALLIEVO:</span>&nbsp;${alunno}
   </td></tr></table>
@@ -1406,12 +1407,12 @@ function buildHtmlPagellina(st,idx){
       <hr style="width:80%;border:none;border-top:1px solid #CBD5E1;margin:2px 0">
       <div style="font-size:8pt;color:#64748B">Voto di condotta:</div>
       <div style="font-size:18pt;font-weight:900;color:${gradeColor(votoCond)};margin:0">${votoCond}</div>
-      ${condDesc?`<div style="font-size:7pt;color:#475569;margin-top:2px;text-align:left;line-height:1.4;padding:4px 6px;background:#F8FAFC;border-radius:6px;border:0.5pt solid #E2E8F0">${condDesc}</div>`:""}
+      ${condDesc?`<div style="font-size:8.5pt;color:#475569;margin-top:2px;text-align:left;line-height:1.4;padding:4px 6px;background:#F8FAFC;border-radius:6px;border:0.5pt solid #E2E8F0">${condDesc}</div>`:""}
     </div>
   </div>
   <div class="firme" style="margin-top:8px">
     <span><strong>Ragusa,</strong> ${today}</span>
-    <span><strong>La Segreteria</strong>: ___________________________</span>
+    <span>La Tutor: <strong>Dott.ssa ${TUTOR_NAME}</strong></span>
   </div>
 </div>
 <div class="pf"><img class="fi" src="${IMG_ASSET_1}" alt="ISO 9001"><div class="ft"><b>ERIS ENTE DEL TERZO SETTORE</b>Sede legale: via Salvatore Paola, 14/a &ndash; 95125 Catania | tel./fax: 095433940 | didattica.ct@erisformazione.it | amministrazione.ct@erisformazione.it<br>Associazione riconosciuta, iscrizione n&deg;&nbsp;293979 C.C.I.A.A. di Catania | CF: 97180200822 | info@pec.erisformazione.it | www.erisformazione.it</div><img class="fi" src="${IMG_ASSET_2}" alt="OHSAS 18001"></div>
