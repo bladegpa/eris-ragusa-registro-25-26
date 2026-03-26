@@ -1144,6 +1144,10 @@ async function buildDocxPagella(st,idx){
 
 // HTML preview pagella — struttura .ph/.pb/.pf identica a buildHtmlCard
 function buildHtmlPagella(st,idx){
+  const dim=!!App.dimessi[idx];
+  const tr=!!App.trasferiti[idx];
+  const dimData=getDimDate(idx)||"";
+  const trasData=getTrasDate(idx)||"";
   const subjCols=SUBJECTS.filter(s=>!s.conductaOnly&&studentHasSubject(idx,s.id));
   const mp=calcMP(idx,subjCols);
   const mpx10=mp!==null?Math.round(mp*10):null;
@@ -1159,6 +1163,29 @@ function buildHtmlPagella(st,idx){
   };
   const mpColor=mpx10===null?"#94A3B8":mpx10>=60?"#059669":mpx10>=50?"#D97706":"#DC2626";
   const today=new Date().toLocaleDateString("it-IT");
+
+  // Box destra: versione speciale per dimessi/trasferiti
+  const boxDestra=(dim||tr)?`
+    <div style="flex:1;border:1pt solid ${tr?"#FED7AA":"#FECACA"};padding:10px 12px;text-align:center;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:8px;background:${tr?"#FFF7ED":"#FFF5F5"};align-self:stretch">
+      <div style="font-size:9pt;color:${tr?"#92400E":"#991B1B"}">L&apos;allievo</div>
+      <div style="font-size:11pt;font-weight:900;color:${tr?"#C2410C":"#DC2626"}">${alunno}</div>
+      <div style="font-size:14pt;font-weight:900;color:${tr?"#EA580C":"#EF4444"};letter-spacing:1px">${tr?"TRASFERITO":"DIMESSO"}</div>
+      ${(tr?trasData:dimData)?`<div style="font-size:9pt;color:#64748B">in data <strong>${tr?trasData:dimData}</strong></div>`:""}
+    </div>`:`
+    <div style="flex:1;border:1pt solid #CBD5E1;padding:10px 12px;text-align:center;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:6px;background:#FAFAFA;align-self:stretch">
+      <div style="font-size:10pt;font-weight:800;letter-spacing:1px">SI ATTESTA CHE</div>
+      <div style="font-size:9pt">L&apos;allievo</div>
+      <div style="font-size:11pt;font-weight:900;color:#0F2557">${alunno}</div>
+      <div style="font-size:9pt">è stato <strong><u>AMMESSO</u></strong> alla</div>
+      <div style="font-size:10pt;font-weight:800">${annoLabel}</div>
+      <div style="font-size:8pt">con il seguente giudizio finale:</div>
+      <div style="font-size:18pt;font-weight:900;color:${giudizioColor(giudizio)};margin:4px 0">${giudizio}</div>
+      <div style="font-size:8pt;color:#64748B;margin-top:4px">Voto di condotta:</div>
+      <div style="font-size:18pt;font-weight:900;color:${gradeColor(votoCond)}">${votoCond}</div>
+      <hr style="width:80%;border:none;border-top:1px solid #CBD5E1;margin:4px 0">
+      <div style="font-size:8pt;color:#64748B">Votazione finale:</div>
+      <div style="font-size:20pt;font-weight:900;color:${mpColor}">${mpx10!==null?mpx10+" / 100":"—"}</div>
+    </div>`;
 
   const righeHtml=subjCols.map(s=>{
     const e=App.grades[s.id]?.[idx];
@@ -1197,20 +1224,7 @@ function buildHtmlPagella(st,idx){
       </tr>
       ${righeHtml}
     </table>
-    <div style="flex:1;border:1pt solid #CBD5E1;padding:10px 12px;text-align:center;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:6px;background:#FAFAFA;align-self:stretch">
-      <div style="font-size:10pt;font-weight:800;letter-spacing:1px">SI ATTESTA CHE</div>
-      <div style="font-size:9pt">L&apos;allievo</div>
-      <div style="font-size:11pt;font-weight:900;color:#0F2557">${alunno}</div>
-      <div style="font-size:9pt">è stato <strong><u>AMMESSO</u></strong> alla</div>
-      <div style="font-size:10pt;font-weight:800">${annoLabel}</div>
-      <div style="font-size:8pt">con il seguente giudizio finale:</div>
-      <div style="font-size:18pt;font-weight:900;color:${giudizioColor(giudizio)};margin:4px 0">${giudizio}</div>
-      <div style="font-size:8pt;color:#64748B;margin-top:4px">Voto di condotta:</div>
-      <div style="font-size:18pt;font-weight:900;color:${gradeColor(votoCond)}">${votoCond}</div>
-      <hr style="width:80%;border:none;border-top:1px solid #CBD5E1;margin:4px 0">
-      <div style="font-size:8pt;color:#64748B">Votazione finale:</div>
-      <div style="font-size:20pt;font-weight:900;color:${mpColor}">${mpx10!==null?mpx10+" / 100":"—"}</div>
-    </div>
+    ${boxDestra}
   </div>
   <div class="firme" style="margin-top:8px">
     <span><strong>Ragusa,</strong> ${today}</span>
@@ -1311,23 +1325,27 @@ ${cards.join("\n")}
 // Funzione principale — esporta pagelle per tutti gli alunni attivi in uno ZIP
 async function exportPagelleZip(){
   if(typeof JSZip==="undefined"){toast("❌ Libreria JSZip non caricata.","err");return;}
-  const attivi=activeStudents(); // solo alunni non dimessi/trasferiti
-  if(!attivi.length){toast("⚠️ Nessun alunno attivo","err");return;}
+  const tuttiGliAlunni=STUDENTS; // tutti: attivi, dimessi e trasferiti
+  if(!tuttiGliAlunni.length){toast("⚠️ Nessun alunno","err");return;}
   toast("⏳ Generazione pagelle in corso...","info");
   try{
     const outerZip=new JSZip();
     const htmlCards=[];
-    for(const st of attivi){
+    for(const st of tuttiGliAlunni){
       const i=STUDENTS.indexOf(st);
-      const bytes=await buildDocxPagella(st,i);
-      const safeName=st.name.replace(/[^A-Za-z0-9\s]/g,"").replace(/\s+/g,"_");
-      outerZip.file("Pagella_"+safeName+".docx",bytes);
+      const dim=!!App.dimessi[i];
+      const tr=!!App.trasferiti[i];
+      if(!dim&&!tr){
+        const bytes=await buildDocxPagella(st,i);
+        const safeName=st.name.replace(/[^A-Za-z0-9\s]/g,"").replace(/\s+/g,"_");
+        outerZip.file("Pagella_"+safeName+".docx",bytes);
+      }
       htmlCards.push(buildHtmlPagella(st,i));
     }
     outerZip.file("Stampa_Pagelle.html",buildPrintHtmlPagelle(htmlCards));
     const blob=await outerZip.generateAsync({type:"blob",compression:"DEFLATE",compressionOptions:{level:6}});
     downloadBlob(blob,"Pagelle_"+CLASSE+"_"+ANNO.replace("/","-")+".zip");
-    toast("✅ "+attivi.length+" pagelle esportate!","ok");
+    toast("✅ "+tuttiGliAlunni.length+" pagelle esportate!","ok");
   }catch(e){console.error(e);toast("❌ Errore pagelle: "+e.message,"err");}
 }
 
@@ -1347,6 +1365,10 @@ function condottaToDescrizione(v){
 
 // ─── Pagellino intermedio HTML (senza DOCX, senza colonna DOCENTE) ───────────
 function buildHtmlPagellina(st,idx){
+  const dim=!!App.dimessi[idx];
+  const tr=!!App.trasferiti[idx];
+  const dimData=getDimDate(idx)||"";
+  const trasData=getTrasDate(idx)||"";
   const subjCols=SUBJECTS.filter(s=>!s.conductaOnly&&studentHasSubject(idx,s.id));
   const mp=calcMP(idx,subjCols);
   const mpx10=mp!==null?Math.round(mp*10):null;
@@ -1355,12 +1377,44 @@ function buildHtmlPagellina(st,idx){
   const votoCond=condEntry?condEntry.value:"—";
   const condDesc=condottaToDescrizione(votoCond);
   const alunno=fmtName(st.name);
+  // Calcolo voto finale: condotta <=8 → tronca, altrimenti arrotonda
+  const condN=condEntry?parseFloat(String(condEntry.value).replace(",",".")):null;
+  const votoFinale=mp!==null?(condN!==null&&!isNaN(condN)&&condN<=8?Math.floor(mp):Math.round(mp)):null;
   const giudizioColor=v=>{
     if(v==="OTTIMO")return"#059669";if(v==="DISTINTO")return"#0369A1";
     if(v==="BUONO")return"#D97706";if(v==="SUFFICIENTE")return"#CA8A04";return"#DC2626";
   };
   const mpColor=mpx10===null?"#94A3B8":mpx10>=60?"#059669":mpx10>=50?"#D97706":"#DC2626";
+  const vfColor=votoFinale===null?"#94A3B8":votoFinale>=9?"#059669":votoFinale>=8?"#0369A1":votoFinale>=7?"#D97706":votoFinale>=6?"#CA8A04":"#DC2626";
   const today=new Date().toLocaleDateString("it-IT");
+
+  // Box destra: versione speciale per dimessi/trasferiti
+  const boxDestraPagellina=(dim||tr)?`
+    <div style="flex:1;border:1pt solid ${tr?"#FED7AA":"#FECACA"};padding:10px 12px;text-align:center;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:8px;background:${tr?"#FFF7ED":"#FFF5F5"};align-self:stretch">
+      <div style="font-size:9pt;color:${tr?"#92400E":"#991B1B"}">L&apos;allievo</div>
+      <div style="font-size:11pt;font-weight:900;color:${tr?"#C2410C":"#DC2626"}">${alunno}</div>
+      <div style="font-size:14pt;font-weight:900;color:${tr?"#EA580C":"#EF4444"};letter-spacing:1px">${tr?"TRASFERITO":"DIMESSO"}</div>
+      ${(tr?trasData:dimData)?`<div style="font-size:9pt;color:#64748B">in data <strong>${tr?trasData:dimData}</strong></div>`:""}
+    </div>`:`
+    <div style="flex:1;border:1pt solid #CBD5E1;padding:10px 12px;text-align:center;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:6px;background:#FAFAFA;align-self:stretch">
+      <div style="font-size:10pt;font-weight:800;letter-spacing:1px;color:#0F2557">${alunno}</div>
+      <hr style="width:80%;border:none;border-top:1px solid #CBD5E1;margin:2px 0">
+      <div style="font-size:8pt;color:#64748B">Giudizio Intermedio 50%</div>
+      <div style="display:flex;align-items:center;justify-content:center;gap:10px;margin:2px 0">
+        <div style="font-size:18pt;font-weight:900;color:${giudizioColor(giudizio)}">${giudizio}</div>
+        <div style="display:flex;flex-direction:column;align-items:center;background:#F1F5F9;border-radius:8px;padding:3px 8px;min-width:44px">
+          <div style="font-size:6pt;color:#64748B;text-transform:uppercase;letter-spacing:.5px">Voto</div>
+          <div style="font-size:16pt;font-weight:900;color:${vfColor};line-height:1">${votoFinale!==null?votoFinale:"—"}</div>
+        </div>
+      </div>
+      <hr style="width:80%;border:none;border-top:1px solid #CBD5E1;margin:2px 0">
+      <div style="font-size:8pt;color:#64748B">Votazione Intermedia:</div>
+      <div style="font-size:20pt;font-weight:900;color:${mpColor}">${mpx10!==null?mpx10+" / 100":"—"}</div>
+      <hr style="width:80%;border:none;border-top:1px solid #CBD5E1;margin:2px 0">
+      <div style="font-size:8pt;color:#64748B">Voto di condotta:</div>
+      <div style="font-size:18pt;font-weight:900;color:${gradeColor(votoCond)};margin:0">${votoCond}</div>
+      ${condDesc?`<div style="font-size:8.5pt;color:#475569;margin-top:2px;text-align:left;line-height:1.4;padding:4px 6px;background:#F8FAFC;border-radius:6px;border:0.5pt solid #E2E8F0">${condDesc}</div>`:""}
+    </div>`;
 
   const righeHtml=subjCols.map(s=>{
     const e=App.grades[s.id]?.[idx];
@@ -1396,19 +1450,7 @@ function buildHtmlPagellina(st,idx){
       </tr>
       ${righeHtml}
     </table>
-    <div style="flex:1;border:1pt solid #CBD5E1;padding:10px 12px;text-align:center;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:6px;background:#FAFAFA;align-self:stretch">
-      <div style="font-size:10pt;font-weight:800;letter-spacing:1px;color:#0F2557">${alunno}</div>
-      <hr style="width:80%;border:none;border-top:1px solid #CBD5E1;margin:2px 0">
-      <div style="font-size:8pt;color:#64748B">Giudizio Intermedio 50%</div>
-      <div style="font-size:18pt;font-weight:900;color:${giudizioColor(giudizio)};margin:2px 0">${giudizio}</div>
-      <hr style="width:80%;border:none;border-top:1px solid #CBD5E1;margin:2px 0">
-      <div style="font-size:8pt;color:#64748B">Votazione Intermedia:</div>
-      <div style="font-size:20pt;font-weight:900;color:${mpColor}">${mpx10!==null?mpx10+" / 100":"—"}</div>
-      <hr style="width:80%;border:none;border-top:1px solid #CBD5E1;margin:2px 0">
-      <div style="font-size:8pt;color:#64748B">Voto di condotta:</div>
-      <div style="font-size:18pt;font-weight:900;color:${gradeColor(votoCond)};margin:0">${votoCond}</div>
-      ${condDesc?`<div style="font-size:8.5pt;color:#475569;margin-top:2px;text-align:left;line-height:1.4;padding:4px 6px;background:#F8FAFC;border-radius:6px;border:0.5pt solid #E2E8F0">${condDesc}</div>`:""}
-    </div>
+    ${boxDestraPagellina}
   </div>
   <div class="firme" style="margin-top:8px">
     <span><strong>Ragusa,</strong> ${today}</span>
@@ -1421,11 +1463,11 @@ function buildHtmlPagellina(st,idx){
 }
 
 function exportPagellineIntermHtml(){
-  const attivi=activeStudents();
-  if(!attivi.length){toast("⚠️ Nessun alunno attivo","err");return;}
+  const tuttiGliAlunni=STUDENTS;
+  if(!tuttiGliAlunni.length){toast("⚠️ Nessun alunno","err");return;}
   toast("⏳ Generazione pagellini intermedi...","info");
   try{
-    const htmlCards=attivi.map(st=>buildHtmlPagellina(st,STUDENTS.indexOf(st)));
+    const htmlCards=tuttiGliAlunni.map(st=>buildHtmlPagellina(st,STUDENTS.indexOf(st)));
     // Riusa buildPrintHtmlPagelle sostituendo il titolo
     const html=buildPrintHtmlPagelle(htmlCards).replace("Pagelle Scolastiche","Pagellini Intermedi").replace("PAGELLA SCOLASTICA","PAGELLINO INTERMEDIO");
     const blob=new Blob([html],{type:"text/html;charset=utf-8"});
@@ -1436,7 +1478,7 @@ function exportPagellineIntermHtml(){
       toast("📥 File scaricato — aprilo nel browser per stampare","info");
     }else{
       setTimeout(()=>URL.revokeObjectURL(url),8000);
-      toast("✅ "+attivi.length+" pagellini intermedi generati!","ok");
+      toast("✅ "+tuttiGliAlunni.length+" pagellini intermedi generati!","ok");
     }
   }catch(e){console.error(e);toast("❌ Errore: "+e.message,"err");}
 }

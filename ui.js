@@ -202,7 +202,8 @@ function buildGridHtml(colsOverride){
       const sv=subjCols.map(s=>{
         if(!studentHasSubject(i,s.id))return null;
         const e=App.grades[s.id]?.[i];if(!e)return null;
-        const n=parseFloat(String(e.value).replace(",","."));
+        const sv2=String(e.value).trim().toUpperCase();
+        const n=sv2==="NC"?4:parseFloat(sv2.replace(",","."));
         return isNaN(n)?null:{n,ore:s.ore};
       }).filter(Boolean);
       if(sv.length){
