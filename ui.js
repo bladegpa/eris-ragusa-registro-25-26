@@ -880,6 +880,7 @@ function renderLogin(){
   $("#pin-in").addEventListener("keydown",e=>{if(e.key==="Enter")doLogin();});
   $("#btn-credits").addEventListener("click",renderCredits);
   $("#btn-back-class").addEventListener("click",renderClassSelect);
+  updateLoginCustomTeachers(); // mostra subito i docenti custom già caricati da Firebase
 }
 
 // ═══════════════════════════════════════════════
