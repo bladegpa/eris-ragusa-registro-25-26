@@ -64,7 +64,7 @@ var TN={
   belluardo_d:"Belluardo D.",sammito:"Sammito M.",
   savasta:"Savasta G.",chiove:"Chiove\' A.",
   cafici:"Cafici D.",belluardo_m:"Belluardo M.",
-  buetta:"Buetta M.",
+  buetta:"Buetta M.",umana:"Umana G.",
 };
 var TE={
   ciacera:"CIACERA MACAUDA GIUSY",iabichella:"ORIANA IABICHELLA",
@@ -74,7 +74,7 @@ var TE={
   belluardo_d:"BELLUARDO DESIRE\'",sammito:"SAMMITO MANUELA",
   savasta:"SAVASTA GIOVANNI",chiove:"CHIOVE\' ALISEA",
   cafici:"CAFICI DANIELA",belluardo_m:"BELLUARDO MARILENA",
-  buetta:"BUETTA MARGHERITA",
+  buetta:"BUETTA MARGHERITA",umana:"UMANA GIORGIA",
 };
 
 var SUBJECTS=[
@@ -92,7 +92,7 @@ var SUBJECTS=[
   {id:"m11", label:"M11 - Informatica",           short:"M11",  ore:30,  doc:"",           emoji:"💻",color:"#6366F1"},
   {id:"m12", label:"M12 - Economia I",            short:"M12",  ore:30,  doc:"pluchino",   emoji:"💰",color:"#D97706"},
   {id:"m13", label:"M13 - Cultura Impresa",       short:"M13",  ore:25,  doc:"",           emoji:"🏢",color:"#64748B"},
-  {id:"m14", label:"M14 - Orientamento I",        short:"M14",  ore:10,  doc:"",           emoji:"🧭",color:"#0F766E"},
+  {id:"m14", label:"M14 - Orientamento I",        short:"M14",  ore:10,  doc:"umana",      emoji:"🧭",color:"#0F766E"},
   {id:"m15", label:"M15 - Storia I",              short:"M15",  ore:20,  doc:"pizzo",      emoji:"🏛",color:"#B45309"},
   {id:"m16", label:"M16 - Geografia Economica",   short:"M16",  ore:10,  doc:"ciacera",    emoji:"🌍",color:"#2563EB"},
   {id:"m17", label:"M17 - Religione/Alter.",        short:"M17",  ore:10,  doc:"",           emoji:"✝",color:"#7C3AED"},

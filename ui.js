@@ -836,7 +836,6 @@ function updateLoginCustomTeachers(){
 }
 
 function renderLogin(){
-  App.page="login"; // ← necessario perché il listener Firebase chiami updateLoginCustomTeachers
   document.body.innerHTML=`
 <div class="login-bg">
   <div class="credits-banner"><div class="credits-inner">
@@ -859,6 +858,7 @@ function renderLogin(){
         <select id="teacher-sel" class="inp">
           <option value="">— Seleziona —</option>
           <optgroup label="👨‍🏫 Docenti">${TEACHERS.map(t=>`<option value="${t.id}">${t.label}</option>`).join("")}</optgroup>
+          ${Object.keys(App.customTeachers||{}).length?`<optgroup label="👤 Nuovi docenti">${Object.values(App.customTeachers).map(t=>`<option value="${t.id}">${t.label}</option>`).join("")}</optgroup>`:""}
           <optgroup label="👁 Tutor / Segreteria">
             <option value="tutor">${TUTOR_NAME} (Tutor)</option>
             <option value="segreteria">Segreteria</option>
