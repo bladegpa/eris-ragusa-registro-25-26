@@ -836,6 +836,7 @@ function updateLoginCustomTeachers(){
 }
 
 function renderLogin(){
+  App.page="login"; // ← necessario perché il listener Firebase chiami updateLoginCustomTeachers
   document.body.innerHTML=`
 <div class="login-bg">
   <div class="credits-banner"><div class="credits-inner">
@@ -880,7 +881,6 @@ function renderLogin(){
   $("#pin-in").addEventListener("keydown",e=>{if(e.key==="Enter")doLogin();});
   $("#btn-credits").addEventListener("click",renderCredits);
   $("#btn-back-class").addEventListener("click",renderClassSelect);
-  updateLoginCustomTeachers(); // mostra subito i docenti custom già caricati da Firebase
 }
 
 // ═══════════════════════════════════════════════
