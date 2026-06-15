@@ -46,6 +46,10 @@ const TN_2D = {
   ruggeri:"Ruggeri G.A.",
   gulino:"Gulino S.",
   curciullo:"Curciullo L.",
+  cervello:"Cervello M.",
+  dammone:"Dammone Sessa N.",
+  scamporino:"Scamporino E.",
+  fidilio:"Fidilio R.",
 };
 const TE_2D = {
   ciacera:"CIACERA MACAUDA GIUSY",      pizzo:"PIZZO ELENA",
@@ -60,6 +64,10 @@ const TE_2D = {
   ruggeri:"RUGGERI GIORGIO ANTHONY",
   gulino:"GULINO SALVATORE",
   curciullo:"CURCIULLO LUCA",
+  cervello:"CERVELLO MARIO",
+  dammone:"DAMMONE SESSA NICOLETTA",
+  scamporino:"SCAMPORINO EGIDIO",
+  fidilio:"FIDILIO ROBERTA",
 };
 
 const SUBJECTS_2D = [

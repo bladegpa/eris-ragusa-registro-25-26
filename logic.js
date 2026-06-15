@@ -86,21 +86,18 @@ async function toggleTrasferito(idx){
 
 async function saveDocenteMateria(sid,id,name,full){
   // Se è un docente completamente nuovo (custom), crea il suo account
-  if(id.startsWith("custom_")&&!App.customTeachers[id]){
-    const initials=name.split(" ").map(w=>w[0]||"").join("").slice(0,2).toUpperCase();
+  const isNuovo=id.startsWith("custom_")&&!App.customTeachers[id];
+  if(isNuovo){
+    const initials=name.split(" ").map(w=>w[0]||"").join("").slice(0,2).toUpperCase()||"DC";
     const newTeacher={id,label:name,full,initials,isAdmin:false,isTutor:false,isSegreteria:false};
     App.customTeachers[id]=newTeacher;
     await fbSet("customTeachers/"+id,newTeacher);
-    // Imposta PIN predefinito
     await fbSet("pins/"+id,DEFAULT_PIN);
     App.pins[id]=DEFAULT_PIN;
-    toast("🆕 Nuovo docente creato: "+name+" (PIN: "+DEFAULT_PIN+")","info");
   }
   App.docenteMaterie[sid]={id,name,full};
   await fbSet("docenteMaterie/"+sid,{id,name,full});
-  if(!id.startsWith("custom_")||App.customTeachers[id]?.label===name){
-    toast("✅ Docente assegnato: "+name,"ok");
-  }
+  toast(isNuovo?("🆕 Docente creato e assegnato: "+name+" (PIN: "+DEFAULT_PIN+")"):("✅ Docente assegnato: "+name),isNuovo?"info":"ok");
   closeAssignTeacherModal();
   if(App.page==="grades")renderGrades();
   else renderAdminMaterie();
@@ -142,19 +139,31 @@ function openAssignTeacherModal(sid){
 
     <div style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.7px;color:#64748B;margin-bottom:8px">📋 Docenti esistenti</div>
     <div style="border:1px solid #E2E8F0;border-radius:12px;overflow:hidden;margin-bottom:14px">
-      ${Object.keys(TN).map(tid=>{
-        const inTeam=TEACHERS.find(t=>t.id===tid);
-        const t=inTeam||{id:tid,label:TN[tid]||tid,initials:(tid.slice(0,2)||"--").toUpperCase(),subjects:[]};
-        const isSelected=t.id===curDocId;
-        return`<button class="asgn-existing-btn" data-tid="${t.id}" data-tname="${t.label}" data-tfull="${TE[t.id]||t.label.toUpperCase()}" style="display:flex;align-items:center;gap:10px;width:100%;padding:11px 14px;border:none;border-bottom:1px solid #F1F5F9;background:${isSelected?"#EFF6FF":"white"};cursor:pointer;text-align:left">
-          <div style="width:34px;height:34px;border-radius:10px;background:${isSelected?"#2563EB":"#F1F5F9"};display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:800;color:${isSelected?"white":"#64748B"};flex-shrink:0">${t.initials}</div>
-          <div style="flex:1;min-width:0">
-            <div style="font-size:13px;font-weight:700;color:#0F172A">${t.label}</div>
-            <div style="font-size:10px;color:#94A3B8">${(t.subjects||[]).map(sid2=>{const s2=SUBJECTS.find(s3=>s3.id===sid2);return s2?s2.short:""}).filter(Boolean).join(", ")||"Nessuna materia assegnata"}</div>
-          </div>
-          ${isSelected?`<span style="font-size:18px">✅</span>`:""}
-        </button>`;
-      }).join("")}
+      ${(()=>{
+        const seen={},lista=[];
+        Object.keys(TN).forEach(tid=>{
+          if(seen[tid])return;seen[tid]=1;
+          const inTeam=TEACHERS.find(t=>t.id===tid);
+          lista.push(inTeam||{id:tid,label:TN[tid]||tid,initials:(tid.slice(0,2)||"--").toUpperCase(),subjects:[],full:TE[tid]||""});
+        });
+        Object.values(App.customTeachers||{}).forEach(ct=>{
+          if(seen[ct.id])return;seen[ct.id]=1;
+          lista.push({id:ct.id,label:ct.label,initials:ct.initials||(ct.label.slice(0,2).toUpperCase()),subjects:[],full:ct.full||ct.label.toUpperCase(),isCustom:true});
+        });
+        return lista.map(t=>{
+          const isSelected=t.id===curDocId;
+          const sub=(t.subjects||[]).map(sid2=>{const s2=SUBJECTS.find(s3=>s3.id===sid2);return s2?s2.short:""}).filter(Boolean).join(", ");
+          const subLabel=t.isCustom?"👤 Docente aggiunto":(sub||"Nessuna materia assegnata");
+          return`<button class="asgn-existing-btn" data-tid="${t.id}" data-tname="${t.label}" data-tfull="${t.full||TE[t.id]||t.label.toUpperCase()}" style="display:flex;align-items:center;gap:10px;width:100%;padding:11px 14px;border:none;border-bottom:1px solid #F1F5F9;background:${isSelected?"#EFF6FF":"white"};cursor:pointer;text-align:left">
+            <div style="width:34px;height:34px;border-radius:10px;background:${isSelected?"#2563EB":(t.isCustom?"#7C3AED":"#F1F5F9")};display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:800;color:${isSelected||t.isCustom?"white":"#64748B"};flex-shrink:0">${t.initials}</div>
+            <div style="flex:1;min-width:0">
+              <div style="font-size:13px;font-weight:700;color:#0F172A">${t.label}</div>
+              <div style="font-size:10px;color:#94A3B8">${subLabel}</div>
+            </div>
+            ${isSelected?`<span style="font-size:18px">✅</span>`:""}
+          </button>`;
+        }).join("");
+      })()}
     </div>
 
     <div style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.7px;color:#64748B;margin-bottom:8px">➕ Nuovo docente</div>

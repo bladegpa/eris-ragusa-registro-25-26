@@ -71,6 +71,11 @@ leone:"Leone A.", raia:"Raia M.",
   ruggeri:"Ruggeri G.A.",
   gulino:"Gulino S.",
   curciullo:"Curciullo L.",
+  cervello:"Cervello M.",
+  dammone:"Dammone Sessa N.",
+  scamporino:"Scamporino E.",
+  zappulla:"Zappulla C.",
+  fidilio:"Fidilio R.",
 };
 var TE={
   ciacera:"CIACERA MACAUDA GIUSY",iabichella:"ORIANA IABICHELLA",
@@ -86,6 +91,11 @@ var TE={
   ruggeri:"RUGGERI GIORGIO ANTHONY",
   gulino:"GULINO SALVATORE",
   curciullo:"CURCIULLO LUCA",
+  cervello:"CERVELLO MARIO",
+  dammone:"DAMMONE SESSA NICOLETTA",
+  scamporino:"SCAMPORINO EGIDIO",
+  zappulla:"ZAPPULLA CARMELO",
+  fidilio:"FIDILIO ROBERTA",
 };
 
 var SUBJECTS=[

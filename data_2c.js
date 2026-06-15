@@ -47,6 +47,11 @@ const TN_2C = {
   ruggeri:"Ruggeri G.A.",
   gulino:"Gulino S.",
   curciullo:"Curciullo L.",
+  cervello:"Cervello M.",
+  dammone:"Dammone Sessa N.",
+  scamporino:"Scamporino E.",
+  zappulla:"Zappulla C.",
+  fidilio:"Fidilio R.",
 };
 const TE_2C = {
   ciacera:"CIACERA MACAUDA GIUSY",      iabichella:"IABICHELLA ORIANA",
@@ -62,6 +67,11 @@ const TE_2C = {
   ruggeri:"RUGGERI GIORGIO ANTHONY",
   gulino:"GULINO SALVATORE",
   curciullo:"CURCIULLO LUCA",
+  cervello:"CERVELLO MARIO",
+  dammone:"DAMMONE SESSA NICOLETTA",
+  scamporino:"SCAMPORINO EGIDIO",
+  zappulla:"ZAPPULLA CARMELO",
+  fidilio:"FIDILIO ROBERTA",
 };
 
 const SUBJECTS_2C = [

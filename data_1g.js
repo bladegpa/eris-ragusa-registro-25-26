@@ -51,6 +51,8 @@ const TN_1G = {
   ruggeri:"Ruggeri G.A.",
   gulino:"Gulino S.",
   curciullo:"Curciullo L.",
+  scollo:"Scollo G.",
+  dammone:"Dammone Sessa N.",
 };
 const TE_1G = {
   fidilio:"FIDILIO ROBERTA",        iabichella:"IABICHELLA ORIANA",
@@ -66,6 +68,8 @@ const TE_1G = {
   ruggeri:"RUGGERI GIORGIO ANTHONY",
   gulino:"GULINO SALVATORE",
   curciullo:"CURCIULLO LUCA",
+  scollo:"SCOLLO GIOVANNI",
+  dammone:"DAMMONE SESSA NICOLETTA",
 };
 
 const SUBJECTS_1G = [

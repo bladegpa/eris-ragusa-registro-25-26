@@ -52,6 +52,9 @@ const TN_3F = {
   ruggeri:"Ruggeri G.A.",
   gulino:"Gulino S.",
   curciullo:"Curciullo L.",
+  scollo:"Scollo G.",
+  scamporino:"Scamporino E.",
+  fidilio:"Fidilio R.",
 };
 const TE_3F = {
   ciacera:     "CIACERA MACAUDA GIUSY",
@@ -75,6 +78,9 @@ const TE_3F = {
   ruggeri:"RUGGERI GIORGIO ANTHONY",
   gulino:"GULINO SALVATORE",
   curciullo:"CURCIULLO LUCA",
+  scollo:"SCOLLO GIOVANNI",
+  scamporino:"SCAMPORINO EGIDIO",
+  fidilio:"FIDILIO ROBERTA",
 };
 
 const SUBJECTS_3F = [

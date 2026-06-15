@@ -60,6 +60,9 @@ const TN_1D = {
   belluardo_d: "Belluardo D.",
   sammito:     "Sammito M.",
   savarino:    "Savarino G.", raia:    "Raia M.", curciullo:    "Curciullo L.", baglieri:    "Baglieri G.", avola:    "Avola G.", ruggeri:    "Ruggeri G.A.", gulino:    "Gulino S.",
+  scamporino:"Scamporino E.",
+  zappulla:"Zappulla C.",
+  fidilio:"Fidilio R.",
 };
 const TE_1D = {
   ciacera:     "CIACERA MACAUDA GIUSY",
@@ -77,6 +80,9 @@ const TE_1D = {
   sammito:     "SAMMITO MANUELA",
   savarino:    "SAVARINO GABRIELLA",
 raia:    "RAIA MARGARET", curciullo:    "CURCIULLO LUCA", baglieri:    "BAGLIERI GIANFRANCO", avola:    "AVOLA GIOVANNI", ruggeri:    "RUGGERI GIORGIO ANTHONY", gulino:    "GULINO SALVATORE",
+  scamporino:"SCAMPORINO EGIDIO",
+  zappulla:"ZAPPULLA CARMELO",
+  fidilio:"FIDILIO ROBERTA",
 };
 
 // ── Materie classe 1D ────────────────────────────────────────────────────────
