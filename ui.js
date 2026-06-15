@@ -826,8 +826,14 @@ function updateLoginDropdown(){
   const sel=$("#teacher-sel");if(!sel)return;
   // Rimuove i vecchi optgroup dinamici
   ["base-teachers-og","custom-teachers-og"].forEach(id=>{const o=document.getElementById(id);if(o)o.remove();});
-  // Optgroup docenti base (TEACHERS + assegnati via override)
-  const base=[...TEACHERS,...overrideAssignedTeachers()];
+  // Optgroup docenti base = TUTTI i docenti del roster classe (TN) + assegnati via override, senza duplicati
+  const seen={},base=[];
+  Object.keys(TN).forEach(tid=>{
+    if(seen[tid])return;seen[tid]=1;
+    const inTeam=TEACHERS.find(t=>t.id===tid);
+    base.push(inTeam||{id:tid,label:TN[tid]||tid});
+  });
+  overrideAssignedTeachers().forEach(t=>{if(seen[t.id])return;seen[t.id]=1;base.push(t);});
   const ogBase=document.createElement("optgroup");
   ogBase.id="base-teachers-og";ogBase.label="👨‍🏫 Docenti";
   base.forEach(t=>{const o=document.createElement("option");o.value=t.id;o.textContent=t.label;ogBase.appendChild(o);});
@@ -1200,8 +1206,8 @@ ${isCondottaParziale?`<div class="info-box" style="margin:8px 14px;border-radius
   </div>
 </div>`:""}
 ${isCondotta&&isAdminOrTutor?(()=>{
-  // Costruisce la lista di tutti i docenti con le loro materie (escluso admin/tutor/segreteria)
-  const allT=TEACHERS.filter(t=>t.id!=="admin"&&t.id!=="tutor"&&t.id!=="segreteria");
+  // Costruisce la lista di tutti i docenti che insegnano (default + override + custom)
+  const allT=teachingTeachers().filter(t=>t.id!=="admin"&&t.id!=="tutor"&&t.id!=="segreteria");
   const cp=App.condottaParziale||{};
   // Per ogni docente conta quanti alunni ha votato
   const withVotes=allT.filter(t=>cp[t.id]&&Object.keys(cp[t.id]).length>0);
@@ -1677,7 +1683,7 @@ async function resetAllPins(){
   const btn=$("#btn-reset-pin");btn.textContent="⏳ Reset in corso...";btn.disabled=true;
   try{
     const updates={};
-    TEACHERS.forEach(t=>{updates["pins/"+t.id]=DEFAULT_PIN;App.pins[t.id]=DEFAULT_PIN;});
+    rosterTeachers().forEach(t=>{updates["pins/"+t.id]=DEFAULT_PIN;App.pins[t.id]=DEFAULT_PIN;});
     Object.keys(App.customTeachers||{}).forEach(tid=>{updates["pins/"+tid]=DEFAULT_PIN;App.pins[tid]=DEFAULT_PIN;});
     if(DB)await fbRef("").update(updates);
     // Reset tutor e segreteria in memoria (non su Firebase)
@@ -1711,7 +1717,7 @@ function renderAdminImpostazioni(){
       </div>
       <div style="font-size:13px;font-weight:700;margin-bottom:8px;color:#64748B">📖 PIN Docenti</div>
       <div style="background:#F8FAFC;border:1px solid #E2E8F0;border-radius:10px;padding:12px;margin-bottom:16px;max-height:220px;overflow-y:auto">
-        ${TEACHERS.map(t=>`<div style="display:flex;align-items:center;justify-content:space-between;padding:5px 0;border-bottom:1px solid #F1F5F9">
+        ${rosterTeachers().map(t=>`<div style="display:flex;align-items:center;justify-content:space-between;padding:5px 0;border-bottom:1px solid #F1F5F9">
           <span style="font-size:12px;font-weight:600">${t.label}</span>
           <span class="corso-badge cb-com" style="font-size:10px">PIN: ${App.pins[t.id]||DEFAULT_PIN}</span>
         </div>`).join("")}
@@ -1856,7 +1862,7 @@ function renderAdminLog(){
     if(uid==="admin")return{icon:"👑",label:"Amministratore"};
     if(uid==="tutor")return{icon:"👁",label:"Tutor — "+TUTOR_NAME};
     if(uid==="segreteria")return{icon:"🗂",label:"Segreteria"};
-    const t=TEACHERS.find(x=>x.id===uid)||(App.customTeachers||{})[uid];
+    const t=allUsers().find(x=>x.id===uid);
     return t?{icon:"👨‍🏫",label:t.label}:{icon:"❓",label:uid};
   };
   // Flatten all events into array

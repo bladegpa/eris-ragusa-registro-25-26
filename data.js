@@ -171,8 +171,32 @@ function overrideAssignedTeachers(){
   });
   return Object.values(extra);
 }
-// Dinamico: include eventuali docenti custom creati da Admin + docenti assegnati via override
-function allUsers(){return[...TEACHERS,...Object.values(App.customTeachers||{}),...overrideAssignedTeachers(),TUTOR,SEGRETERIA,ADMIN];}
+// Tutti i docenti del roster classe (da TN), con dati da TEACHERS se disponibili
+function rosterTeachers(){
+  return Object.keys(TN).map(tid=>{
+    const t=TEACHERS.find(x=>x.id===tid);
+    if(t)return t;
+    const lbl=TN[tid]||tid;
+    return {id:tid,label:lbl,full:TE[tid]||lbl.toUpperCase(),initials:(lbl.replace(/[^A-Za-z]/g,"").slice(0,2)||"DC").toUpperCase(),isAdmin:false,isTutor:false,isSegreteria:false,subjects:[]};
+  });
+}
+// Dinamico: include docenti del roster + custom creati da Admin + assegnati via override
+function allUsers(){
+  const seen={},out=[];
+  [...rosterTeachers(),...Object.values(App.customTeachers||{}),...overrideAssignedTeachers()].forEach(u=>{
+    if(seen[u.id])return;seen[u.id]=1;out.push(u);
+  });
+  out.push(TUTOR,SEGRETERIA,ADMIN);
+  return out;
+}
+// Docenti che insegnano effettivamente (con materia di default, override o custom) — per condotta/riepiloghi
+function teachingTeachers(){
+  const seen={},out=[];
+  [...TEACHERS,...overrideAssignedTeachers(),...Object.values(App.customTeachers||{})].forEach(u=>{
+    if(!u||seen[u.id])return;seen[u.id]=1;out.push(u);
+  });
+  return out;
+}
 // Materie effettive del docente loggato — ricalcolate da docenteMaterie (realtime)
 function mySubjects(){
   const t=App.teacher;if(!t)return[];
