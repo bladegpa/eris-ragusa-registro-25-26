@@ -76,7 +76,7 @@ const TE_1D = {
   belluardo_d: "BELLUARDO DESIRE\'",
   sammito:     "SAMMITO MANUELA",
   savarino:    "SAVARINO GABRIELLA",
-raia:    "RAIA MARGARET", curciullo:    "CURCIULLO LUCA", baglieri:    "BAGLIERI GIANFRANCO", avola:    "AVOLA GIOVANNI", ruggeri:    "RUGGERI GIORGIO ANTHONY", gulino:    "GULINO S.",
+raia:    "RAIA MARGARET", curciullo:    "CURCIULLO LUCA", baglieri:    "BAGLIERI GIANFRANCO", avola:    "AVOLA GIOVANNI", ruggeri:    "RUGGERI GIORGIO ANTHONY", gulino:    "GULINO SALVATORE",
 };
 
 // ── Materie classe 1D ────────────────────────────────────────────────────────

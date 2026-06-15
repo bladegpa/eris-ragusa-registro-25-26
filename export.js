@@ -613,6 +613,28 @@ function votoToDescFinaleTeoria(v){
 
 function escXml(s){return String(s).replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;");}
 
+// Decodifica entità HTML usate in courseLabel/courseCode per il testo DOCX
+function decodeHtmlEntities(s){
+  return String(s||"")
+    .replace(/&mdash;/g,"\u2014").replace(/&ndash;/g,"\u2013")
+    .replace(/&deg;/g,"\u00B0").replace(/&nbsp;/g," ")
+    .replace(/&amp;/g,"&");
+}
+// Testo intestazione scheda DOCX basato sulla classe attiva
+function schedaHeaderText(){
+  const lbl=decodeHtmlEntities(COURSE_TRACKS.courseLabel||"");
+  const code=decodeHtmlEntities(COURSE_TRACKS.courseCode||"");
+  // Evita "Classe 2D — Classe 2D": aggiunge "Classe X" solo se il codice non lo contiene già
+  const classePrefix=/classe/i.test(code)?"":"Classe "+CLASSE+" \u2014 ";
+  return "Corso: "+lbl+"  "+classePrefix+code;
+}
+// Sostituisce l'intestazione corso hardcoded (1E) nel template scheda con quella corretta
+function fixSchedaHeader(xml){
+  const HARD="Corso: Operatore del benessere- Erogazione di trattamenti di acconciatura/ Operatore del benessere- Erogazione dei servizi di trattamento estetico  I E n. ore: 1056 Id 116 - D26AE1E ";
+  if(xml.indexOf(HARD)!==-1)return xml.split(HARD).join(escXml(schedaHeaderText()));
+  return xml; // template diverso → lascia invariato
+}
+
 async function buildDocxForStudent(subj,st,gradeEntry,isPratica){
   const val=gradeEntry.value;
   const valutazione=votoToValutazione(val);
@@ -621,6 +643,7 @@ async function buildDocxForStudent(subj,st,gradeEntry,isPratica){
   const materiaText=subj.label+(subj.ore>0?" — "+subj.ore+"h":"");
   const zip=await JSZip.loadAsync(getTemplateB64(),{base64:true});
   let xml=await zip.file("word/document.xml").async("string");
+  xml=fixSchedaHeader(xml); // sostituisce l'intestazione corso/codice hardcoded con quella della classe attiva
   const r=(tag,val)=>{xml=xml.split(tag).join(val);};
   r("{{ALUNNO}}",escXml(alunnoName));
   r("{{DOCENTE}}",escXml(docenteName));

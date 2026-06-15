@@ -142,13 +142,15 @@ function openAssignTeacherModal(sid){
 
     <div style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.7px;color:#64748B;margin-bottom:8px">📋 Docenti esistenti</div>
     <div style="border:1px solid #E2E8F0;border-radius:12px;overflow:hidden;margin-bottom:14px">
-      ${TEACHERS.map(t=>{
+      ${Object.keys(TN).map(tid=>{
+        const inTeam=TEACHERS.find(t=>t.id===tid);
+        const t=inTeam||{id:tid,label:TN[tid]||tid,initials:(tid.slice(0,2)||"--").toUpperCase(),subjects:[]};
         const isSelected=t.id===curDocId;
         return`<button class="asgn-existing-btn" data-tid="${t.id}" data-tname="${t.label}" data-tfull="${TE[t.id]||t.label.toUpperCase()}" style="display:flex;align-items:center;gap:10px;width:100%;padding:11px 14px;border:none;border-bottom:1px solid #F1F5F9;background:${isSelected?"#EFF6FF":"white"};cursor:pointer;text-align:left">
           <div style="width:34px;height:34px;border-radius:10px;background:${isSelected?"#2563EB":"#F1F5F9"};display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:800;color:${isSelected?"white":"#64748B"};flex-shrink:0">${t.initials}</div>
           <div style="flex:1;min-width:0">
             <div style="font-size:13px;font-weight:700;color:#0F172A">${t.label}</div>
-            <div style="font-size:10px;color:#94A3B8">${(t.subjects||[]).map(sid2=>{const s2=SUBJECTS.find(s3=>s3.id===sid2);return s2?s2.short:""}).filter(Boolean).join(", ")}</div>
+            <div style="font-size:10px;color:#94A3B8">${(t.subjects||[]).map(sid2=>{const s2=SUBJECTS.find(s3=>s3.id===sid2);return s2?s2.short:""}).filter(Boolean).join(", ")||"Nessuna materia assegnata"}</div>
           </div>
           ${isSelected?`<span style="font-size:18px">✅</span>`:""}
         </button>`;

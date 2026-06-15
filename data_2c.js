@@ -41,6 +41,12 @@ const TN_2C = {
   umana:"Umana G.",               chiove:"Chiove\' A.",
   savasta:"Savasta G.",            buetta:"Buetta M.",
   belluardo_m:"Belluardo M.",
+  raia:"Raia M.",
+  baglieri:"Baglieri G.",
+  avola:"Avola G.",
+  ruggeri:"Ruggeri G.A.",
+  gulino:"Gulino S.",
+  curciullo:"Curciullo L.",
 };
 const TE_2C = {
   ciacera:"CIACERA MACAUDA GIUSY",      iabichella:"IABICHELLA ORIANA",
@@ -50,6 +56,12 @@ const TE_2C = {
   umana:"UMANA GIORGIA",                 chiove:"CHIOVE\' ALISEA",
   savasta:"SAVASTA GIOVANNI",            buetta:"BUETTA MARGHERITA",
   belluardo_m:"BELLUARDO MARILENA",
+  raia:"RAIA MARGARET",
+  baglieri:"BAGLIERI GIANFRANCO",
+  avola:"AVOLA GIOVANNI",
+  ruggeri:"RUGGERI GIORGIO ANTHONY",
+  gulino:"GULINO SALVATORE",
+  curciullo:"CURCIULLO LUCA",
 };
 
 const SUBJECTS_2C = [

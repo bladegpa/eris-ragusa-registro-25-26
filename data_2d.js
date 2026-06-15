@@ -40,6 +40,12 @@ const TN_2D = {
   scollo:"Scollo G.",             leone:"Leone A.",
   umana:"Umana G.",               zappulla:"Zappulla C.",
   ciurciullo:"Ciurciullo L.",
+  raia:"Raia M.",
+  baglieri:"Baglieri G.",
+  avola:"Avola G.",
+  ruggeri:"Ruggeri G.A.",
+  gulino:"Gulino S.",
+  curciullo:"Curciullo L.",
 };
 const TE_2D = {
   ciacera:"CIACERA MACAUDA GIUSY",      pizzo:"PIZZO ELENA",
@@ -48,6 +54,12 @@ const TE_2D = {
   scollo:"SCOLLO GIOVANNI",              leone:"LEONE ANGELA",
   umana:"UMANA GIORGIA",                 zappulla:"ZAPPULLA CARMELO",
   ciurciullo:"CIURCIULLO LUCA",
+  raia:"RAIA MARGARET",
+  baglieri:"BAGLIERI GIANFRANCO",
+  avola:"AVOLA GIOVANNI",
+  ruggeri:"RUGGERI GIORGIO ANTHONY",
+  gulino:"GULINO SALVATORE",
+  curciullo:"CURCIULLO LUCA",
 };
 
 const SUBJECTS_2D = [

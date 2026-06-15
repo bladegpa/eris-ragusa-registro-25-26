@@ -45,6 +45,12 @@ const TN_1G = {
   cervello:"Cervello M.",  scamporino:"Scamporino E.", sammito:"Sammito M.",
   umana:"Umana G.",        leone:"Leone A.",            zappulla:"Zappulla C.",
   buetta:"Buetta M.",      perna:"Perna V.",
+  raia:"Raia M.",
+  baglieri:"Baglieri G.",
+  avola:"Avola G.",
+  ruggeri:"Ruggeri G.A.",
+  gulino:"Gulino S.",
+  curciullo:"Curciullo L.",
 };
 const TE_1G = {
   fidilio:"FIDILIO ROBERTA",        iabichella:"IABICHELLA ORIANA",
@@ -54,6 +60,12 @@ const TE_1G = {
   sammito:"SAMMITO MANUELA",        umana:"UMANA GIORGIA",
   leone:"LEONE ANGELA",             zappulla:"ZAPPULLA CARMELO",
   buetta:"BUETTA MARGHERITA",       perna:"PERNA VIRNA",
+  raia:"RAIA MARGARET",
+  baglieri:"BAGLIERI GIANFRANCO",
+  avola:"AVOLA GIOVANNI",
+  ruggeri:"RUGGERI GIORGIO ANTHONY",
+  gulino:"GULINO SALVATORE",
+  curciullo:"CURCIULLO LUCA",
 };
 
 const SUBJECTS_1G = [

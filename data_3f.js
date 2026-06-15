@@ -46,6 +46,12 @@ const TN_3F = {
   buetta:      "Buetta M.",
   savasta:     "Savasta G.",
   belluardo_m: "Belluardo M.",
+  raia:"Raia M.",
+  baglieri:"Baglieri G.",
+  avola:"Avola G.",
+  ruggeri:"Ruggeri G.A.",
+  gulino:"Gulino S.",
+  curciullo:"Curciullo L.",
 };
 const TE_3F = {
   ciacera:     "CIACERA MACAUDA GIUSY",
@@ -63,6 +69,12 @@ const TE_3F = {
   buetta:      "BUETTA MARGHERITA",
   savasta:     "SAVASTA GIOVANNI",
   belluardo_m: "BELLUARDO MARILENA",
+  raia:"RAIA MARGARET",
+  baglieri:"BAGLIERI GIANFRANCO",
+  avola:"AVOLA GIOVANNI",
+  ruggeri:"RUGGERI GIORGIO ANTHONY",
+  gulino:"GULINO SALVATORE",
+  curciullo:"CURCIULLO LUCA",
 };
 
 const SUBJECTS_3F = [
