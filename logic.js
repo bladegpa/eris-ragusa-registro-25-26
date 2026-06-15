@@ -299,6 +299,21 @@ function initFB(){
   // Carica customTeachers — listener gestito in startSync dopo la scelta classe
   // (il listener globale pre-login qui è rimosso; customTeachers vengono caricati in startSync)
 }
+// Preload one-time dei docenti (custom + assegnati via override) per popolare il dropdown di login
+// prima dell'autenticazione. Usa il prefisso Firebase della classe già selezionata.
+function preloadLoginTeachers(){
+  if(!DB){setTimeout(preloadLoginTeachers,300);return;}
+  try{
+    fbRef("customTeachers").once("value").then(snap=>{
+      App.customTeachers=snap.exists()?snap.val():{};
+      if(App.page==="login"&&typeof updateLoginDropdown==="function")updateLoginDropdown();
+    }).catch(()=>{});
+    fbRef("docenteMaterie").once("value").then(snap=>{
+      App.docenteMaterie=snap.exists()?snap.val():{};
+      if(App.page==="login"&&typeof updateLoginDropdown==="function")updateLoginDropdown();
+    }).catch(()=>{});
+  }catch(e){}
+}
 function startSync(){
   if(!DB){setTimeout(startSync,300);return;}
   // Write pending login log entry now that DB is ready

@@ -158,7 +158,21 @@ var COURSE_TRACKS={
 };
 
 // Dinamico: include eventuali docenti custom creati da Admin
-function allUsers(){return[...TEACHERS,...Object.values(App.customTeachers||{}),TUTOR,SEGRETERIA,ADMIN];}
+// Docenti assegnati via override (docenteMaterie) ma senza materia di default → ricostruiti come utenti
+function overrideAssignedTeachers(){
+  const extra={};
+  Object.values(App.docenteMaterie||{}).forEach(ov=>{
+    if(!ov||!ov.id)return;
+    if(TEACHERS.some(t=>t.id===ov.id))return;          // già in TEACHERS
+    if((App.customTeachers||{})[ov.id])return;          // già custom
+    if(extra[ov.id])return;
+    const lbl=ov.name||TN[ov.id]||ov.id;
+    extra[ov.id]={id:ov.id,label:lbl,full:ov.full||TE[ov.id]||lbl.toUpperCase(),initials:(lbl.replace(/[^A-Za-z]/g,"").slice(0,2)||"DC").toUpperCase(),isAdmin:false,isTutor:false,isSegreteria:false,subjects:[]};
+  });
+  return Object.values(extra);
+}
+// Dinamico: include eventuali docenti custom creati da Admin + docenti assegnati via override
+function allUsers(){return[...TEACHERS,...Object.values(App.customTeachers||{}),...overrideAssignedTeachers(),TUTOR,SEGRETERIA,ADMIN];}
 // Materie effettive del docente loggato — ricalcolate da docenteMaterie (realtime)
 function mySubjects(){
   const t=App.teacher;if(!t)return[];

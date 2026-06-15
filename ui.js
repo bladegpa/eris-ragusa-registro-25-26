@@ -821,19 +821,30 @@ async function applyImport(changes){
 // ═══════════════════════════════════════════════
 //  LOGIN
 // ═══════════════════════════════════════════════
-// Aggiorna dropdown login con docenti custom (chiamato da Firebase listener)
-function updateLoginCustomTeachers(){
+// Ricostruisce gli optgroup docenti del dropdown login (custom + override + base)
+function updateLoginDropdown(){
   const sel=$("#teacher-sel");if(!sel)return;
-  let og=document.getElementById("custom-teachers-og");
-  if(og)og.remove();
+  // Rimuove i vecchi optgroup dinamici
+  ["base-teachers-og","custom-teachers-og"].forEach(id=>{const o=document.getElementById(id);if(o)o.remove();});
+  // Optgroup docenti base (TEACHERS + assegnati via override)
+  const base=[...TEACHERS,...overrideAssignedTeachers()];
+  const ogBase=document.createElement("optgroup");
+  ogBase.id="base-teachers-og";ogBase.label="👨‍🏫 Docenti";
+  base.forEach(t=>{const o=document.createElement("option");o.value=t.id;o.textContent=t.label;ogBase.appendChild(o);});
+  // Optgroup docenti custom
   const customs=Object.values(App.customTeachers||{});
-  if(!customs.length)return;
-  og=document.createElement("optgroup");
-  og.id="custom-teachers-og";og.label="👤 Nuovi docenti";
-  customs.forEach(t=>{const o=document.createElement("option");o.value=t.id;o.textContent=t.label;og.appendChild(o);});
-  const groups=sel.querySelectorAll("optgroup");
-  if(groups.length>=2)sel.insertBefore(og,groups[1]);else sel.appendChild(og);
+  // Inserisce base subito dopo l'opzione placeholder, poi custom subito dopo base
+  const firstOpt=sel.querySelector("option");
+  if(firstOpt&&firstOpt.nextSibling)sel.insertBefore(ogBase,firstOpt.nextSibling);else sel.appendChild(ogBase);
+  if(customs.length){
+    const ogC=document.createElement("optgroup");
+    ogC.id="custom-teachers-og";ogC.label="👤 Nuovi docenti";
+    customs.forEach(t=>{const o=document.createElement("option");o.value=t.id;o.textContent=t.label;ogC.appendChild(o);});
+    sel.insertBefore(ogC,ogBase.nextSibling);
+  }
 }
+// Alias retro-compatibile (chiamato dal listener Firebase customTeachers)
+function updateLoginCustomTeachers(){updateLoginDropdown();}
 
 function renderLogin(){
   document.body.innerHTML=`
@@ -857,8 +868,6 @@ function renderLogin(){
       <div class="sel-wrap">
         <select id="teacher-sel" class="inp">
           <option value="">— Seleziona —</option>
-          <optgroup label="👨‍🏫 Docenti">${TEACHERS.map(t=>`<option value="${t.id}">${t.label}</option>`).join("")}</optgroup>
-          ${Object.keys(App.customTeachers||{}).length?`<optgroup label="👤 Nuovi docenti">${Object.values(App.customTeachers).map(t=>`<option value="${t.id}">${t.label}</option>`).join("")}</optgroup>`:""}
           <optgroup label="👁 Tutor / Segreteria">
             <option value="tutor">${TUTOR_NAME} (Tutor)</option>
             <option value="segreteria">Segreteria</option>
@@ -881,6 +890,8 @@ function renderLogin(){
   $("#pin-in").addEventListener("keydown",e=>{if(e.key==="Enter")doLogin();});
   $("#btn-credits").addEventListener("click",renderCredits);
   $("#btn-back-class").addEventListener("click",renderClassSelect);
+  updateLoginDropdown();      // popola i docenti già noti (TEACHERS + override/custom in memoria)
+  preloadLoginTeachers();     // carica da Firebase custom + override e ri-popola il dropdown
 }
 
 // ═══════════════════════════════════════════════
