@@ -170,6 +170,7 @@ function buildGridHtml(colsOverride){
   const isPartial=!!(colsOverride&&colsOverride.length>0);
   const showAmmDim=!isPartial;
   const gradeFs="8pt";
+  const condFs=(parseFloat(gradeFs)*1.25)+"pt"; // font voto condotta = voti ×1,25 (10pt)
   const subjCols=(isPartial?colsOverride:SUBJECTS).filter(s=>!s.conductaOnly);
   const condS=SUBJECTS.find(s=>s.id==="condotta");
   const allCols=[...subjCols,condS].filter(Boolean);
@@ -229,7 +230,7 @@ function buildGridHtml(colsOverride){
   // ── Build table header ─────────────────────────────────────────────────────
   const thSubj=allCols.map(s=>{
     const isCond=!!s.conductaOnly;
-    const bg=isCond?"#F5F3FF":"#FFFFFF";
+    const bg=isCond?"#FFFFFF":"#FFFFFF";
     const borderCol=isCond?"#C4B5FD":"#CBD5E1";
     const textCol=isCond?"#5B21B6":"#0F172A";
     return`<th style="background:${bg};border:0.4pt solid ${borderCol};padding:0;width:5.5mm;height:26mm;vertical-align:bottom">
@@ -261,12 +262,13 @@ function buildGridHtml(colsOverride){
     const csBadge=!inactive?(cs===COURSE_TRACKS.track1.id?`<sup style="font-size:4pt;color:${COURSE_TRACKS.track1.supColor};font-weight:700"> ${COURSE_TRACKS.track1.sup}</sup>`:(COURSE_TRACKS.track2.id&&cs===COURSE_TRACKS.track2.id)?`<sup style="font-size:4pt;color:${COURSE_TRACKS.track2.supColor};font-weight:700"> ${COURSE_TRACKS.track2.sup}</sup>`:""):"";
 
     const gradeCells=allCols.map(s=>{
+      const isCondCol=!!s.conductaOnly;
       if(dim)return`<td style="border:0.4pt solid #D4D8E2;background:#FEF2F2;text-align:center;font-weight:700;font-size:5.5pt;color:#EF4444">DIM.</td>`;
       if(tr)return`<td style="border:0.4pt solid #FED7AA;background:#FFF7ED;text-align:center;font-weight:700;font-size:4.5pt;color:#EA580C">TRANSF.</td>`;
       if(!studentHasSubject(i,s.id))return`<td style="border:0.4pt solid #D4D8E2;background:#E4EAF2;text-align:center;font-size:4.5pt;color:#94A3B8">N/A</td>`;
       const v=grades[s.id];
-      if(!v)return`<td style="border:0.4pt solid #D4D8E2;background:${rowBg};text-align:center;color:#CBD5E1;font-size:5.5pt">—</td>`;
-      return`<td style="border:0.4pt solid #D4D8E2;background:${gBg(v)};text-align:center;font-weight:700;font-size:${gradeFs};color:#0F172A">${v}</td>`;
+      if(!v)return`<td style="border:0.4pt solid #D4D8E2;background:${isCondCol?"#FFFFFF":rowBg};text-align:center;color:#CBD5E1;font-size:5.5pt">—</td>`;
+      return`<td style="border:0.4pt solid #D4D8E2;background:${isCondCol?"#FFFFFF":gBg(v)};text-align:center;font-weight:700;font-size:${isCondCol?condFs:gradeFs};color:#0F172A">${v}</td>`;
     }).join("");
 
     const dimD=getDimDate(i);
@@ -397,7 +399,7 @@ ${(!isPartial?(()=>{
 
     const thS=pageCols.map(s=>{
       const isCond=!!s.conductaOnly;
-      const bg=isCond?"#F5F3FF":"#FFFFFF";
+      const bg=isCond?"#FFFFFF":"#FFFFFF";
       const borderCol=isCond?"#C4B5FD":"#CBD5E1";
       const textCol=isCond?"#5B21B6":"#0F172A";
       return`<th style="background:${bg};border:0.4pt solid ${borderCol};padding:0;width:5.5mm;height:26mm;vertical-align:bottom">
@@ -424,12 +426,13 @@ ${(!isPartial?(()=>{
       const nameSt=dim?`text-decoration:line-through;color:#94A3B8`:tr?`font-weight:600;color:#C2410C`:`font-weight:600;color:#0F172A`;
       const csBadge=!inactive?(cs===COURSE_TRACKS.track1.id?`<sup style="font-size:4pt;color:${COURSE_TRACKS.track1.supColor};font-weight:700"> ${COURSE_TRACKS.track1.sup}</sup>`:(COURSE_TRACKS.track2.id&&cs===COURSE_TRACKS.track2.id)?`<sup style="font-size:4pt;color:${COURSE_TRACKS.track2.supColor};font-weight:700"> ${COURSE_TRACKS.track2.sup}</sup>`:""):"";
       const cells=pageCols.map(s=>{
+        const isCondCol=!!s.conductaOnly;
         if(dim)return`<td style="border:0.4pt solid #D4D8E2;background:#FEF2F2;text-align:center;font-weight:700;font-size:5.5pt;color:#EF4444">DIM.</td>`;
         if(tr)return`<td style="border:0.4pt solid #FED7AA;background:#FFF7ED;text-align:center;font-weight:700;font-size:4.5pt;color:#EA580C">TRANSF.</td>`;
         if(!studentHasSubject(i,s.id))return`<td style="border:0.4pt solid #D4D8E2;background:#E4EAF2;text-align:center;font-size:4.5pt;color:#94A3B8">N/A</td>`;
         const v=grades[s.id];
-        if(!v)return`<td style="border:0.4pt solid #D4D8E2;background:${rowBg};text-align:center;color:#CBD5E1;font-size:5.5pt">—</td>`;
-        return`<td style="border:0.4pt solid #D4D8E2;background:${gBg(v)};text-align:center;font-weight:700;font-size:${gradeFs};color:#0F172A">${v}</td>`;
+        if(!v)return`<td style="border:0.4pt solid #D4D8E2;background:${isCondCol?"#FFFFFF":rowBg};text-align:center;color:#CBD5E1;font-size:5.5pt">—</td>`;
+        return`<td style="border:0.4pt solid #D4D8E2;background:${isCondCol?"#FFFFFF":gBg(v)};text-align:center;font-weight:700;font-size:${isCondCol?condFs:gradeFs};color:#0F172A">${v}</td>`;
       }).join("");
       const dimD=getDimDate(i);
       const trasD=getTrasDate(i);
