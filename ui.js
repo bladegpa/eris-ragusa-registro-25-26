@@ -240,9 +240,9 @@ function buildGridHtml(colsOverride){
     </th>`;
   }).join("");
 
-  const thMA=`<th style="background:#1E3A5F;border:0.4pt solid #0F2040;padding:0;width:9mm;height:26mm;vertical-align:bottom"><div style="writing-mode:vertical-rl;transform:rotate(180deg);display:flex;flex-direction:column;align-items:flex-start;padding:1mm 1.5mm 1mm 0.5mm;height:25mm"><span style="font-size:5.5pt;font-weight:800;color:#93C5FD;white-space:nowrap">M.A.</span><span style="font-size:4.5pt;color:rgba(255,255,255,.82);white-space:nowrap">Media Aritmetica</span></div></th>`;
-  const thMP=`<th style="background:#78350F;border:0.4pt solid #0F2040;padding:0;width:9mm;height:26mm;vertical-align:bottom"><div style="writing-mode:vertical-rl;transform:rotate(180deg);display:flex;flex-direction:column;align-items:flex-start;padding:1mm 1.5mm 1mm 0.5mm;height:25mm"><span style="font-size:5.5pt;font-weight:800;color:#FCD34D;white-space:nowrap">M.P.</span><span style="font-size:4.5pt;color:rgba(255,255,255,.82);white-space:nowrap">Media Ponderata</span></div></th>`;
-  const thVF=`<th style="background:#0F2557;border:0.4pt solid #0F2040;border-left:1.5pt solid #3B82F6;padding:0;width:9mm;height:26mm;vertical-align:bottom"><div style="writing-mode:vertical-rl;transform:rotate(180deg);display:flex;flex-direction:column;align-items:flex-start;padding:1mm 1.5mm 1mm 0.5mm;height:25mm"><span style="font-size:6pt;font-weight:800;color:#FDE68A;white-space:nowrap">V.F.</span><span style="font-size:4.5pt;color:rgba(255,255,255,.9);white-space:nowrap">Voto Finale</span></div></th>`;
+  const thMA=``; // colonna Media Aritmetica rimossa
+  const thMP=`<th style="background:#78350F;border:0.4pt solid #0F2040;padding:0;width:9mm;height:26mm;vertical-align:bottom"><div style="writing-mode:vertical-rl;transform:rotate(180deg);display:flex;flex-direction:column;align-items:flex-start;padding:1mm 1.5mm 1mm 0.5mm;height:25mm"><span style="font-size:6pt;font-weight:800;color:#FCD34D;white-space:nowrap">Media</span></div></th>`;
+  const thVF=``; // colonna Voto Finale rimossa
 
   // ── ORE row ────────────────────────────────────────────────────────────────
   const oreRow=`<tr style="background:#E8EDF5">
@@ -250,9 +250,7 @@ function buildGridHtml(colsOverride){
     <td style="border:0.4pt solid #CBD5E1;font-size:5pt;font-weight:700;font-style:italic;color:#1B3F8B;padding-left:1.5mm">ORE h</td>
     ${showAmmDim?`<td style="border:0.4pt solid #CBD5E1"></td><td style="border:0.4pt solid #CBD5E1"></td>`:""}
     ${allCols.map(s=>`<td style="border:0.4pt solid #CBD5E1;font-size:4.5pt;color:#64748B;text-align:center;font-style:italic">${s.ore>0?s.ore:"—"}</td>`).join("")}
-    ${showAmmDim?`<td style="border:0.4pt solid #CBD5E1;background:#DBEAFE"></td>
-    <td style="border:0.4pt solid #CBD5E1;background:#FEF9C3"></td>
-    <td style="border:0.4pt solid #CBD5E1;border-left:1.5pt solid #3B82F6;background:#EEF2FF"></td>`:""}
+    ${showAmmDim?`<td style="border:0.4pt solid #CBD5E1;background:#FEF9C3"></td>`:""}
   </tr>`;
 
   // ── Student rows ──────────────────────────────────────────────────────────
@@ -287,9 +285,7 @@ function buildGridHtml(colsOverride){
       <td style="border:0.4pt solid #D4D8E2;font-size:5.5pt;${nameSt};background:${dim?"#F1F5F9":tr?"#FFF7ED":"#EEF2F7"};padding:0.3mm 1mm">${fmtN(st.name)}${csBadge}</td>
       ${showAmmDim?`<td style="border:0.4pt solid #D4D8E2;font-size:4.5pt;text-align:center;color:#0F172A;font-weight:600">${ammD}</td><td style="border:0.4pt solid #D4D8E2;font-size:4.5pt;text-align:center;font-weight:700;color:${tr?"#EA580C":"#EF4444"};line-height:1.2">${dim?(dimD||"DIM."):tr?(trasD||"TRANSF."):""}</td>`:""}
       ${gradeCells}
-      ${showAmmDim?`<td style="border:0.4pt solid #CBD5E1;text-align:center;font-weight:700;font-size:5.5pt;color:#0F172A;background:#DBEAFE">${maS}</td>
-      <td style="border:0.4pt solid #CBD5E1;text-align:center;font-weight:700;font-size:5.5pt;color:#0F172A;background:#FEF9C3">${mpS}</td>
-      <td style="border:0.4pt solid #CBD5E1;border-left:1.5pt solid #3B82F6;text-align:center;font-weight:800;font-size:8pt;color:#0F172A;background:${vfBg}">${vf!==null?vf:"—"}</td>`:""}
+      ${showAmmDim?`<td style="border:0.4pt solid #CBD5E1;text-align:center;font-weight:700;font-size:5.5pt;color:#0F172A;background:#FEF9C3">${mpS}</td>`:""}
     </tr>`;
   }).join("");
 
@@ -365,9 +361,7 @@ table{width:100%;border-collapse:collapse;table-layout:fixed}
     <td colspan="2" style="background:#0F2557;border:0.4pt solid #1E3A5F;font-size:5pt;font-weight:700;color:#FDE68A;text-align:center;padding:1mm">DOCENTI</td>
     ${showAmmDim?`<td style="background:#0F2557;border:0.4pt solid #1E3A5F"></td><td style="background:#0F2557;border:0.4pt solid #1E3A5F"></td>`:""}
     ${teacherCells}
-    ${showAmmDim?`<td style="background:#1E3A5F;border:0.4pt solid #1E3A5F"></td>
-    <td style="background:#78350F;border:0.4pt solid #1E3A5F"></td>
-    <td style="background:#0F2557;border:0.4pt solid #1E3A5F;border-left:1.5pt solid #3B82F6"></td>`:""}
+    ${showAmmDim?`<td style="background:#78350F;border:0.4pt solid #1E3A5F"></td>`:""}
   </tr>
 </tbody>
 </table>
@@ -421,9 +415,7 @@ ${(!isPartial?(()=>{
       <td style="border:0.4pt solid #CBD5E1"></td>
       ${pageCols.map(s=>`<td style="border:0.4pt solid #CBD5E1;font-size:4.5pt;color:#64748B;text-align:center;font-style:italic">${s.ore>0?s.ore:"—"}</td>`).join("")}
       ${showSummary?`
-      <td style="border:0.4pt solid #CBD5E1;background:#DBEAFE"></td>
-      <td style="border:0.4pt solid #CBD5E1;background:#FEF9C3"></td>
-      <td style="border:0.4pt solid #CBD5E1;border-left:1.5pt solid #3B82F6;background:#EEF2FF"></td>`:""}
+      <td style="border:0.4pt solid #CBD5E1;background:#FEF9C3"></td>`:""}
     </tr>`;
 
     const rowsS=rowsData.map(({st,i,dim,tr,cs,grades,ma,mp,vf},ri)=>{
@@ -443,15 +435,8 @@ ${(!isPartial?(()=>{
       const trasD=getTrasDate(i);
       const ammD=getAmmDate(i);
       const summaryCells=showSummary?(()=>{
-        const maS=ma!==null?(Math.round(ma*10)/10).toFixed(1):"—";
         const mpS=mp!==null?(Math.round(mp*10)/10).toFixed(1):"—";
-        const maC=ma!==null?gColor(ma):"#CBD5E1";
-        const mpC=mp!==null?gColor(mp):"#CBD5E1";
-        const vfC=vf!==null?gColor(vf):"#CBD5E1";
-        const vfBg=vf!==null?gBg(vf):"transparent";
-        return`<td style="border:0.4pt solid #CBD5E1;text-align:center;font-weight:700;font-size:5.5pt;color:#0F172A;background:#DBEAFE">${maS}</td>
-        <td style="border:0.4pt solid #CBD5E1;text-align:center;font-weight:700;font-size:5.5pt;color:#0F172A;background:#FEF9C3">${mpS}</td>
-        <td style="border:0.4pt solid #CBD5E1;border-left:1.5pt solid #3B82F6;text-align:center;font-weight:800;font-size:8pt;color:#0F172A;background:${vfBg}">${vf!==null?vf:"—"}</td>`;
+        return`<td style="border:0.4pt solid #CBD5E1;text-align:center;font-weight:700;font-size:5.5pt;color:#0F172A;background:#FEF9C3">${mpS}</td>`;
       })():"";
       return`<tr style="background:${rowBg}">
         <td style="border:0.4pt solid #D4D8E2;text-align:center;font-weight:700;font-size:5.5pt;color:${dim?"#94A3B8":tr?"#EA580C":"#475569"};background:${dim?"#F1F5F9":tr?"#FFF7ED":"#EEF2F7"}">${st.num}</td>
@@ -471,7 +456,7 @@ ${(!isPartial?(()=>{
     }).join("");
 
     const legendNote=showSummary
-      ?`N/A = materia non del corso &nbsp;|&nbsp; <sup>${COURSE_TRACKS.track1.sup}</sup> = ${COURSE_TRACKS.track1.label}${COURSE_TRACKS.track2.id?` &nbsp;|&nbsp; <sup>${COURSE_TRACKS.track2.sup}</sup> = ${COURSE_TRACKS.track2.label}`:""} &nbsp;|&nbsp; M.A. = Media Aritm. &nbsp;|&nbsp; M.P. = Media Pond. &nbsp;|&nbsp; V.F. = Voto Finale`
+      ?`N/A = materia non del corso &nbsp;|&nbsp; <sup>${COURSE_TRACKS.track1.sup}</sup> = ${COURSE_TRACKS.track1.label}${COURSE_TRACKS.track2.id?` &nbsp;|&nbsp; <sup>${COURSE_TRACKS.track2.sup}</sup> = ${COURSE_TRACKS.track2.label}`:""} &nbsp;|&nbsp; Media = Media Ponderata (pesata sulle ore)`
       :`N/A = materia non del corso &nbsp;|&nbsp; <sup>${COURSE_TRACKS.track1.sup}</sup> = ${COURSE_TRACKS.track1.label}${COURSE_TRACKS.track2.id?` &nbsp;|&nbsp; <sup>${COURSE_TRACKS.track2.sup}</sup> = ${COURSE_TRACKS.track2.label}`:""}`;
 
     return`<div class="pg pg-split" id="pg-split-${pageNum}" style="page-break-before:always">
@@ -507,9 +492,7 @@ ${(!isPartial?(()=>{
     <td style="background:#0F2557;border:0.4pt solid #1E3A5F"></td>
     ${teacherS}
     ${showSummary?`
-    <td style="background:#1E3A5F;border:0.4pt solid #1E3A5F"></td>
-    <td style="background:#78350F;border:0.4pt solid #1E3A5F"></td>
-    <td style="background:#0F2557;border:0.4pt solid #1E3A5F;border-left:1.5pt solid #3B82F6"></td>`:""}
+    <td style="background:#78350F;border:0.4pt solid #1E3A5F"></td>`:""}
   </tr>
 </tbody>
 </table>

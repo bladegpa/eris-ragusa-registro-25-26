@@ -980,13 +980,15 @@ function getPagellaB64(){
 }
 
 // Giudizio sintetico dalla media ponderata (scala 0-10)
+// 6–6,5 Sufficiente | 6,51–7,5 Discreto | 7,51–8,5 Buono | 8,51–9,5 Distinto | 9,51–10 Ottimo
 function mpToGiudizioSintetico(mp){
   if(mp===null||mp===undefined)return"NON CLASSIFICABILE";
-  const mpx10=Math.round(mp*10);
-  if(mpx10>=90)return"OTTIMO";
-  if(mpx10>=80)return"DISTINTO";
-  if(mpx10>=70)return"BUONO";
-  if(mpx10>=60)return"SUFFICIENTE";
+  const v=Math.round(mp*100)/100; // 2 decimali per gestire le soglie .51
+  if(v>=9.51)return"OTTIMO";
+  if(v>=8.51)return"DISTINTO";
+  if(v>=7.51)return"BUONO";
+  if(v>=6.51)return"DISCRETO";
+  if(v>=6)return"SUFFICIENTE";
   return"INSUFFICIENTE";
 }
 
@@ -1182,7 +1184,8 @@ function buildHtmlPagella(st,idx){
   const annoLabel=annoN===1?"II Annualità":annoN===2?"III Annualità":annoN===3?"IV Annualità":"V Annualità";
   const giudizioColor=v=>{
     if(v==="OTTIMO")return"#059669";if(v==="DISTINTO")return"#0369A1";
-    if(v==="BUONO")return"#D97706";if(v==="SUFFICIENTE")return"#CA8A04";return"#DC2626";
+    if(v==="BUONO")return"#D97706";if(v==="DISCRETO")return"#CA8A04";
+    if(v==="SUFFICIENTE")return"#A16207";return"#DC2626";
   };
   const mpColor=mpx10===null?"#94A3B8":mpx10>=60?"#059669":mpx10>=50?"#D97706":"#DC2626";
   const today=new Date().toLocaleDateString("it-IT");
@@ -1405,7 +1408,8 @@ function buildHtmlPagellina(st,idx){
   const votoFinale=mp!==null?(condN!==null&&!isNaN(condN)&&condN<=8?Math.floor(mp):Math.round(mp)):null;
   const giudizioColor=v=>{
     if(v==="OTTIMO")return"#059669";if(v==="DISTINTO")return"#0369A1";
-    if(v==="BUONO")return"#D97706";if(v==="SUFFICIENTE")return"#CA8A04";return"#DC2626";
+    if(v==="BUONO")return"#D97706";if(v==="DISCRETO")return"#CA8A04";
+    if(v==="SUFFICIENTE")return"#A16207";return"#DC2626";
   };
   const mpColor=mpx10===null?"#94A3B8":mpx10>=60?"#059669":mpx10>=50?"#D97706":"#DC2626";
   const vfColor=votoFinale===null?"#94A3B8":votoFinale>=9?"#059669":votoFinale>=8?"#0369A1":votoFinale>=7?"#D97706":votoFinale>=6?"#CA8A04":"#DC2626";
