@@ -242,7 +242,7 @@ function buildGridHtml(colsOverride){
   }).join("");
 
   const thMA=``; // colonna Media Aritmetica rimossa
-  const thMP=`<th style="background:#78350F;border:0.4pt solid #0F2040;padding:0;width:9mm;height:26mm;vertical-align:bottom"><div style="writing-mode:vertical-rl;transform:rotate(180deg);display:flex;flex-direction:column;align-items:flex-start;padding:1mm 1.5mm 1mm 0.5mm;height:25mm"><span style="font-size:6pt;font-weight:800;color:#FCD34D;white-space:nowrap">Media</span></div></th>`;
+  const thMP=`<th style="background:#FFFFFF;border:0.4pt solid #0F2040;padding:0;width:9mm;height:26mm;vertical-align:bottom"><div style="writing-mode:vertical-rl;transform:rotate(180deg);display:flex;flex-direction:column;align-items:flex-start;padding:1mm 1.5mm 1mm 0.5mm;height:25mm"><span style="font-size:6pt;font-weight:800;color:#92400E;white-space:nowrap">Media</span></div></th>`;
   const thVF=``; // colonna Voto Finale rimossa
 
   // ── ORE row ────────────────────────────────────────────────────────────────
@@ -251,7 +251,7 @@ function buildGridHtml(colsOverride){
     <td style="border:0.4pt solid #CBD5E1;font-size:5pt;font-weight:700;font-style:italic;color:#1B3F8B;padding-left:1.5mm">ORE h</td>
     ${showAmmDim?`<td style="border:0.4pt solid #CBD5E1"></td><td style="border:0.4pt solid #CBD5E1"></td>`:""}
     ${allCols.map(s=>`<td style="border:0.4pt solid #CBD5E1;font-size:4.5pt;color:#64748B;text-align:center;font-style:italic">${s.ore>0?s.ore:"—"}</td>`).join("")}
-    ${showAmmDim?`<td style="border:0.4pt solid #CBD5E1;background:#FEF9C3"></td>`:""}
+    ${showAmmDim?`<td style="border:0.4pt solid #CBD5E1;background:#FFFFFF"></td>`:""}
   </tr>`;
 
   // ── Student rows ──────────────────────────────────────────────────────────
@@ -287,7 +287,7 @@ function buildGridHtml(colsOverride){
       <td style="border:0.4pt solid #D4D8E2;font-size:5.5pt;${nameSt};background:${dim?"#F1F5F9":tr?"#FFF7ED":"#EEF2F7"};padding:0.3mm 1mm">${fmtN(st.name)}${csBadge}</td>
       ${showAmmDim?`<td style="border:0.4pt solid #D4D8E2;font-size:4.5pt;text-align:center;color:#0F172A;font-weight:600">${ammD}</td><td style="border:0.4pt solid #D4D8E2;font-size:4.5pt;text-align:center;font-weight:700;color:${tr?"#EA580C":"#EF4444"};line-height:1.2">${dim?(dimD||"DIM."):tr?(trasD||"TRANSF."):""}</td>`:""}
       ${gradeCells}
-      ${showAmmDim?`<td style="border:0.4pt solid #CBD5E1;text-align:center;font-weight:700;font-size:5.5pt;color:#0F172A;background:#FEF9C3">${mpS}</td>`:""}
+      ${showAmmDim?`<td style="border:0.4pt solid #CBD5E1;text-align:center;font-weight:700;font-size:${condFs};color:#0F172A;background:#FFFFFF">${mpS}</td>`:""}
     </tr>`;
   }).join("");
 
@@ -363,7 +363,7 @@ table{width:100%;border-collapse:collapse;table-layout:fixed}
     <td colspan="2" style="background:#0F2557;border:0.4pt solid #1E3A5F;font-size:5pt;font-weight:700;color:#FDE68A;text-align:center;padding:1mm">DOCENTI</td>
     ${showAmmDim?`<td style="background:#0F2557;border:0.4pt solid #1E3A5F"></td><td style="background:#0F2557;border:0.4pt solid #1E3A5F"></td>`:""}
     ${teacherCells}
-    ${showAmmDim?`<td style="background:#78350F;border:0.4pt solid #1E3A5F"></td>`:""}
+    ${showAmmDim?`<td style="background:#FFFFFF;border:0.4pt solid #1E3A5F"></td>`:""}
   </tr>
 </tbody>
 </table>
@@ -417,7 +417,7 @@ ${(!isPartial?(()=>{
       <td style="border:0.4pt solid #CBD5E1"></td>
       ${pageCols.map(s=>`<td style="border:0.4pt solid #CBD5E1;font-size:4.5pt;color:#64748B;text-align:center;font-style:italic">${s.ore>0?s.ore:"—"}</td>`).join("")}
       ${showSummary?`
-      <td style="border:0.4pt solid #CBD5E1;background:#FEF9C3"></td>`:""}
+      <td style="border:0.4pt solid #CBD5E1;background:#FFFFFF"></td>`:""}
     </tr>`;
 
     const rowsS=rowsData.map(({st,i,dim,tr,cs,grades,ma,mp,vf},ri)=>{
@@ -439,7 +439,7 @@ ${(!isPartial?(()=>{
       const ammD=getAmmDate(i);
       const summaryCells=showSummary?(()=>{
         const mpS=mp!==null?(Math.round(mp*10)/10).toFixed(1):"—";
-        return`<td style="border:0.4pt solid #CBD5E1;text-align:center;font-weight:700;font-size:5.5pt;color:#0F172A;background:#FEF9C3">${mpS}</td>`;
+        return`<td style="border:0.4pt solid #CBD5E1;text-align:center;font-weight:700;font-size:${condFs};color:#0F172A;background:#FFFFFF">${mpS}</td>`;
       })():"";
       return`<tr style="background:${rowBg}">
         <td style="border:0.4pt solid #D4D8E2;text-align:center;font-weight:700;font-size:5.5pt;color:${dim?"#94A3B8":tr?"#EA580C":"#475569"};background:${dim?"#F1F5F9":tr?"#FFF7ED":"#EEF2F7"}">${st.num}</td>
@@ -495,7 +495,7 @@ ${(!isPartial?(()=>{
     <td style="background:#0F2557;border:0.4pt solid #1E3A5F"></td>
     ${teacherS}
     ${showSummary?`
-    <td style="background:#78350F;border:0.4pt solid #1E3A5F"></td>`:""}
+    <td style="background:#FFFFFF;border:0.4pt solid #1E3A5F"></td>`:""}
   </tr>
 </tbody>
 </table>
