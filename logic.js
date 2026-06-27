@@ -50,6 +50,32 @@ async function saveAmmOverride(i,date){
   else{delete App.ammissioni.overrides[i];await fbSet("ammissioni/overrides/"+i,null);}
 }
 
+// ─── Seed una-tantum delle date di ammissione predefinite (da AMMISSIONI_DEFAULTS) ──
+// Scrive su Firebase le date hardcoded nei file data_*.js SOLO la prima volta per
+// ciascuna classe (marcatore "ammissioni/_seeded"). Dopo il primo seed, qualsiasi
+// modifica fatta dall'Admin prevale e non viene mai sovrascritta.
+async function seedAmmissioniDefaults(){
+  if(!DB)return;
+  const defs=AMMISSIONI_DEFAULTS||{};
+  const keys=Object.keys(defs);
+  if(!keys.length)return;
+  try{
+    const flag=await fbRef("ammissioni/_seeded").get();
+    if(flag.exists())return; // già seedato una volta per questa classe
+    if(!App.ammissioni)App.ammissioni={defaultDate:"",overrides:{}};
+    if(!App.ammissioni.overrides)App.ammissioni.overrides={};
+    for(const k of keys){
+      const cur=await fbRef("ammissioni/overrides/"+k).get();
+      if(!cur.exists()){
+        const dmy=toDmy(defs[k]);
+        App.ammissioni.overrides[k]=dmy;
+        await fbRef("ammissioni/overrides/"+k).set(dmy);
+      }
+    }
+    await fbRef("ammissioni/_seeded").set(new Date().toISOString());
+  }catch(e){console.warn("Seed ammissioni non riuscito:",e);}
+}
+
 // ─── Data di dimissione ─────────────────────────────────────────────────────
 function getDimDate(i){return toDmy(App.dimissioni?.[i]||"");}
 async function saveDimDate(i,date){
@@ -354,6 +380,8 @@ function startSync(){
   fbRef("condotta_parziale").on("value",snap=>{App.condottaParziale=snap.exists()?snap.val():{};if(App.page!=="login")renderPage();});
   // Sync blocco per singola materia
   fbRef("subjectsLocked").on("value",snap=>{App.subjectsLocked=snap.exists()?snap.val():{};if(App.page!=="login")renderPage();});
+  // Seed una-tantum delle date di ammissione predefinite della classe attiva
+  seedAmmissioniDefaults();
 }
 function stopSync(){if(DB){try{fbRef("grades").off();fbRef("dimessi").off();fbRef("corsiStudenti").off();fbRef("corsiMaterie").off();fbRef("docenteMaterie").off();fbRef("accessLog").off();fbRef("ammissioni").off();fbRef("dimissioni_date").off();fbRef("trasferiti").off();fbRef("trasferiti_date").off();fbRef("customTeachers").off();fbRef("pins").off();fbRef("condotta_parziale").off();fbRef("subjectsLocked").off();}catch(e){}} App.fbL=null;}
 // ─── Helper Firebase con prefisso classe ────────────────────────────────────

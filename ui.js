@@ -1329,6 +1329,7 @@ ${isRO?`<div class="info-box info-blue" style="margin:8px 14px;border-radius:10p
   <button class="tab-btn${App.adminTab==="materie"?" active":""}" data-tab="materie">📖 Materie</button>
   <button class="tab-btn${App.adminTab==="alunni"?" active":""}" data-tab="alunni">👥 Alunni</button>
   <button class="tab-btn${App.adminTab==="riepilogo"?" active":""}" data-tab="riepilogo">📊 Riepilogo</button>
+  <button class="tab-btn${App.adminTab==="professori"?" active":""}" data-tab="professori">👨‍🏫 Prof</button>
   ${App.teacher.isAdmin?`<button class="tab-btn${App.adminTab==="impostazioni"?" active":""}" data-tab="impostazioni">⚙️ PIN</button><button class="tab-btn${App.adminTab==="log"?" active":""}" data-tab="log">📋 Log</button>`:""}
 </div>
 <div id="admin-body" class="page-wrap"></div>
@@ -1345,6 +1346,7 @@ function renderAdminBody(){
   ab.classList.toggle("page-wrap-wide", App.adminTab==="riepilogo");
   if(App.adminTab==="materie")renderAdminMaterie();
   else if(App.adminTab==="alunni")renderAdminAlunni();
+  else if(App.adminTab==="professori")renderAdminProfessori();
   else if(App.adminTab==="impostazioni")renderAdminImpostazioni();
   else if(App.adminTab==="log")renderAdminLog();
   else renderAdminRiepilogo();
@@ -1360,6 +1362,7 @@ function renderAdminMaterie(){
     <button class="btn-print-grid" id="btn-mat-print"><span style="font-size:22px">🖨️</span><div><div class="btn-lbl-big">Stampa Griglia A4</div><div class="btn-lbl-small">HTML stampabile · 1 pagina landscape</div></div></button>
     ${App.teacher.isAdmin?`<button class="btn-print-grid" id="btn-pagelle" style="background:linear-gradient(135deg,#7C3AED,#5B21B6)"><span style="font-size:22px">📋</span><div><div class="btn-lbl-big">Genera Pagelle</div><div class="btn-lbl-small">DOCX + HTML · tutti gli alunni attivi</div></div></button>`:""}
     ${App.teacher.isAdmin?`<button class="btn-print-grid" id="btn-pagelle-interm" style="background:linear-gradient(135deg,#0369A1,#0F2557)"><span style="font-size:22px">📄</span><div><div class="btn-lbl-big">Pagellino Intermedio</div><div class="btn-lbl-small">Solo HTML · senza DOCX · 50% del percorso</div></div></button>`:""}
+    ${App.teacher.isAdmin?`<button class="btn-print-grid" id="btn-schede-all" style="background:linear-gradient(135deg,#0F766E,#065F46)"><span style="font-size:22px">📚</span><div><div class="btn-lbl-big">Schede Valutazione — Tutte le Classi</div><div class="btn-lbl-small">HTML stampabili + ZIP DOCX · ogni classe e modulo</div></div></button>`:""}
     ${App.teacher.isAdmin?`<button class="btn-import" id="btn-import"><span style="font-size:22px">📤</span><div><div class="btn-lbl-big">Importa Voti da File</div><div class="btn-lbl-small">CSV o Excel — aggiorna i voti dal file</div></div></button>`:""}
     ${isT?`<div class="info-box info-green">✏️ <strong>Tutor</strong> — Tocca una materia per inserire o modificare i voti di tutti gli alunni della classe.</div>`:!isRO?`<div class="info-box info-blue">Assegna ogni materia al corso giusto. Le materie <strong>Comuni</strong> sono visibili per tutti gli alunni; le esclusive solo per il corso assegnato.</div>`:""}
     ${App.teacher.isAdmin?(()=>{const noDoc=SUBJECTS.filter(s=>!s.conductaOnly&&!docNameOf(s.id));return noDoc.length>0?`<div class="info-box info-yellow">⚠️ <strong>${noDoc.length} materie senza docente assegnato:</strong> ${noDoc.map(s=>s.short).join(", ")} — usa il pulsante <strong>👤 Assegna docente</strong> su ciascuna.</div>`:"";})():""}
@@ -1407,6 +1410,7 @@ function renderAdminMaterie(){
   if(App.teacher.isAdmin){
     const bpg=$("#btn-pagelle");if(bpg)bpg.addEventListener("click",exportPagelleZip);
     const bpi=$("#btn-pagelle-interm");if(bpi)bpi.addEventListener("click",exportPagellineIntermHtml);
+    const bsa=$("#btn-schede-all");if(bsa)bsa.addEventListener("click",openSchedeAllModal);
     const bi=$("#btn-import");if(bi)bi.addEventListener("click",openImportModal);
   }
   $$(".btn-subj-lock[data-lock]").forEach(btn=>{btn.addEventListener("click",function(e){e.stopPropagation();toggleSubjectLock(this.dataset.lock);});});
@@ -1455,6 +1459,44 @@ function openSchedeTipoModal(sid){
   document.getElementById("btn-tipo-teorica").addEventListener("click",()=>{modal.remove();exportSchedeZip(sid,false);});
   document.getElementById("btn-tipo-pratica").addEventListener("click",()=>{modal.remove();exportSchedeZip(sid,true);});
   document.getElementById("btn-tipo-annulla").addEventListener("click",()=>modal.remove());
+  modal.addEventListener("click",e=>{if(e.target===modal)modal.remove();});
+}
+
+// ── Modal: schede di valutazione di TUTTE le classi (solo Admin) ─────────────
+function openSchedeAllModal(){
+  const existing=document.getElementById("modal-schede-all");
+  if(existing)existing.remove();
+  const modal=document.createElement("div");
+  modal.id="modal-schede-all";
+  modal.style.cssText="position:fixed;inset:0;background:rgba(0,0,0,.55);z-index:9999;display:flex;align-items:center;justify-content:center;padding:20px";
+  modal.innerHTML=`
+<div style="background:white;border-radius:18px;padding:24px 22px;max-width:400px;width:100%;box-shadow:0 20px 60px rgba(0,0,0,.35);max-height:90vh;overflow-y:auto">
+  <div style="font-size:20px;font-weight:900;color:#0F172A;margin-bottom:6px">📚 Schede — Tutte le Classi</div>
+  <div style="font-size:13px;color:#475569;margin-bottom:14px">Genera un unico file <strong>.zip</strong> con, per <strong>ogni classe e ogni modulo</strong>: l'HTML stampabile delle schede, il riepilogo voti e uno ZIP con i file <strong>.docx</strong> (uno per alunno valutato).</div>
+  <div style="background:#FFFBEB;border:1px solid #FDE68A;border-radius:10px;padding:10px 12px;margin-bottom:16px;font-size:11.5px;color:#92400E">⚠️ Operazione pesante: legge i dati di tutte le classi da Firebase e genera molti documenti. Consigliata da <strong>PC</strong>; può richiedere 1–3 minuti.</div>
+  <div style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.6px;color:#64748B;margin-bottom:8px">Sezione "Prove Pratiche"</div>
+  <div style="display:flex;flex-direction:column;gap:10px;margin-bottom:18px">
+    <button id="btn-all-auto" style="display:flex;align-items:center;gap:14px;background:linear-gradient(135deg,#0F766E,#065F46);border:none;border-radius:12px;padding:14px 16px;color:white;cursor:pointer;text-align:left">
+      <span style="font-size:26px">🧭</span>
+      <div>
+        <div style="font-size:14px;font-weight:800">Automatica (consigliata)</div>
+        <div style="font-size:11px;opacity:.85;margin-top:2px">I moduli d'indirizzo (non "Comune") sono trattati come PRATICI; i comuni come teorici.</div>
+      </div>
+    </button>
+    <button id="btn-all-teor" style="display:flex;align-items:center;gap:14px;background:linear-gradient(135deg,#1E3A5F,#2563EB);border:none;border-radius:12px;padding:14px 16px;color:white;cursor:pointer;text-align:left">
+      <span style="font-size:26px">📝</span>
+      <div>
+        <div style="font-size:14px;font-weight:800">Tutti TEORICI</div>
+        <div style="font-size:11px;opacity:.85;margin-top:2px">Nessuna sezione "Prove Pratiche" compilata per nessun modulo.</div>
+      </div>
+    </button>
+  </div>
+  <button id="btn-all-annulla" style="width:100%;background:#F1F5F9;border:none;border-radius:10px;padding:10px;font-size:13px;font-weight:700;color:#64748B;cursor:pointer">Annulla</button>
+</div>`;
+  document.body.appendChild(modal);
+  document.getElementById("btn-all-auto").addEventListener("click",()=>{modal.remove();exportAllClassesSchede("auto");});
+  document.getElementById("btn-all-teor").addEventListener("click",()=>{modal.remove();exportAllClassesSchede("teoriche");});
+  document.getElementById("btn-all-annulla").addEventListener("click",()=>modal.remove());
   modal.addEventListener("click",e=>{if(e.target===modal)modal.remove();});
 }
 function renderAdminAlunni(){
@@ -1658,7 +1700,7 @@ function renderAdminRiepilogo(){
     </div>
     <button class="btn-green" id="btn-xls2"><span style="font-size:20px">📥</span><div><div class="btn-lbl-big">Esporta Excel Completo</div><div class="btn-lbl-small">Tutti i voti · medie · voto finale</div></div></button>
     <button class="btn-print-grid" id="btn-grid-print"><span style="font-size:20px">🖨️</span><div><div class="btn-lbl-big">Stampa Griglia A4</div><div class="btn-lbl-small">HTML stampabile · 1 pagina landscape</div></div></button>
-    ${App.teacher.isSegreteria?`<button class="btn-green" id="btn-backup-seg" style="background:linear-gradient(135deg,#0F172A,#1E3A5F)"><span style="font-size:20px">💾</span><div><div class="btn-lbl-big">BACKUP GENERALE</div><div class="btn-lbl-small">Esporta tutte le 5 classi in un unico Excel</div></div></button>`:""}`;
+    ${App.teacher.isSegreteria?`<button class="btn-green" id="btn-backup-seg" style="background:linear-gradient(135deg,#0F172A,#1E3A5F)"><span style="font-size:20px">💾</span><div><div class="btn-lbl-big">BACKUP GENERALE</div><div class="btn-lbl-small">Esporta tutte le classi in un unico Excel</div></div></button>`:""}`;
   const b=$("#btn-xls2");if(b)b.addEventListener("click",()=>{const wb=buildWB(null);XLSX.writeFile(wb,xlsFilename());toast("✅ Excel esportato!","ok");});
   const gp=$("#btn-grid-print");if(gp)gp.addEventListener("click",exportGridHtml);
   const bbs=$("#btn-backup-seg");if(bbs)bbs.addEventListener("click",buildBackupAllClasses);
@@ -1727,7 +1769,7 @@ function renderAdminImpostazioni(){
 // ═══════════════════════════════════════════════
 
 // ═══════════════════════════════════════════════
-//  BACKUP GENERALE — tutte le 5 classi in un unico Excel (solo Admin)
+//  BACKUP GENERALE — tutte le classi in un unico Excel (solo Admin)
 // ═══════════════════════════════════════════════
 async function buildBackupAllClasses(){
   if(!DB){toast("❌ Connessione Firebase non disponibile","err");return;}
@@ -1740,6 +1782,7 @@ async function buildBackupAllClasses(){
       {classe:"1G",prefix:"1G/",students:STUDENTS_1G,   subjects:SUBJECTS_1G},
       {classe:"2C",prefix:"2C/",students:STUDENTS_2C,   subjects:SUBJECTS_2C},
       {classe:"2D",prefix:"2D/",students:STUDENTS_2D,   subjects:SUBJECTS_2D},
+      {classe:"3F",prefix:"3F/",students:STUDENTS_3F,   subjects:SUBJECTS_3F},
     ];
     const wb=XLSX.utils.book_new();
     const gRGB=v=>{const n=parseFloat(String(v).replace(",","."));return isNaN(n)?"3B82F6":n<6?"EF4444":n<7?"CA8A04":n<9?"D97706":"059669";};
@@ -1836,7 +1879,7 @@ async function buildBackupAllClasses(){
     const today=new Date().toISOString().slice(0,10);
     const fname="BACKUP_Registro_ERIS_Ragusa_"+ANNO.replace("/","-")+"_"+today+".xlsx";
     XLSX.writeFile(wb,fname);
-    toast("✅ Backup completato — 5 classi esportate in "+fname,"ok");
+    toast("✅ Backup completato — "+cfgs.length+" classi esportate in "+fname,"ok");
   }catch(e){console.error(e);toast("❌ Errore backup: "+e.message,"err");}
 }
 
@@ -1878,7 +1921,7 @@ function renderAdminLog(){
   };
 
   el.innerHTML=`
-    <button class="btn-green" id="btn-backup-all" style="background:linear-gradient(135deg,#0F172A,#1E3A5F);margin-bottom:12px"><span style="font-size:22px">💾</span><div><div class="btn-lbl-big">BACKUP GENERALE</div><div class="btn-lbl-small">Esporta tutte le 5 classi in un unico Excel</div></div></button>
+    <button class="btn-green" id="btn-backup-all" style="background:linear-gradient(135deg,#0F172A,#1E3A5F);margin-bottom:12px"><span style="font-size:22px">💾</span><div><div class="btn-lbl-big">BACKUP GENERALE</div><div class="btn-lbl-small">Esporta tutte le classi in un unico Excel</div></div></button>
     <div class="card" style="margin-bottom:10px">
       <div class="card-head"><span class="sec-lbl">📊 Riepilogo accessi</span><span style="font-size:10px;color:#94A3B8">${events.length} accessi totali</span></div>
       ${summaryRows.length===0?`<div style="padding:16px;text-align:center;font-size:13px;color:#94A3B8">Nessun accesso registrato</div>`:`
@@ -1955,3 +1998,102 @@ ${headerHTML("Cambia PIN",true)}
 }
 
 
+// ═══════════════════════════════════════════════
+//  BARRA DI AVANZAMENTO (overlay riusabile)
+// ═══════════════════════════════════════════════
+function showProgress(title,subtitle){
+  let el=document.getElementById("progress-overlay");
+  if(el)el.remove();
+  el=document.createElement("div");
+  el.id="progress-overlay";
+  el.style.cssText="position:fixed;inset:0;background:rgba(15,23,42,.62);z-index:10000;display:flex;align-items:center;justify-content:center;padding:24px;backdrop-filter:blur(2px)";
+  el.innerHTML=`
+  <div style="background:white;border-radius:18px;padding:24px 22px;max-width:400px;width:100%;box-shadow:0 24px 70px rgba(0,0,0,.45)">
+    <div style="font-size:17px;font-weight:900;color:#0F172A;margin-bottom:4px">${title||"Generazione in corso…"}</div>
+    <div id="prog-sub" style="font-size:12px;color:#64748B;margin-bottom:16px;min-height:16px">${subtitle||""}</div>
+    <div style="background:#E2E8F0;border-radius:999px;height:16px;overflow:hidden">
+      <div id="prog-bar" style="height:100%;width:0%;background:linear-gradient(90deg,#0F766E,#059669);border-radius:999px;transition:width .25s"></div>
+    </div>
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-top:9px">
+      <span id="prog-label" style="font-size:11px;color:#475569;flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">Preparazione…</span>
+      <span id="prog-pct" style="font-size:13px;font-weight:900;color:#059669;margin-left:10px">0%</span>
+    </div>
+  </div>`;
+  document.body.appendChild(el);
+}
+function updateProgress(pct,label,sub){
+  const bar=document.getElementById("prog-bar");
+  const p=document.getElementById("prog-pct");
+  const l=document.getElementById("prog-label");
+  const s=document.getElementById("prog-sub");
+  const v=Math.max(0,Math.min(100,Math.round(pct)));
+  if(bar)bar.style.width=v+"%";
+  if(p)p.textContent=v+"%";
+  if(l&&label!=null)l.textContent=label;
+  if(s&&sub!=null)s.textContent=sub;
+}
+function hideProgress(){const el=document.getElementById("progress-overlay");if(el)el.remove();}
+// Cede il controllo al browser per ridipingere la barra tra un'operazione e l'altra
+function uiTick(){return new Promise(r=>setTimeout(r,0));}
+
+// ═══════════════════════════════════════════════
+//  SCHEDA PROFESSORI (per la classe attiva) — solo Admin
+// ═══════════════════════════════════════════════
+// Raggruppa le materie della classe per docente effettivo (rispetta gli override).
+function profsWithSubjects(){
+  const map={};
+  SUBJECTS.forEach(s=>{
+    if(s.conductaOnly)return;
+    const pid=docOf(s.id);
+    if(!pid)return;
+    if(!map[pid])map[pid]={id:pid,label:docNameOf(s.id)||pid,full:docFullOf(s.id)||"",subjects:[]};
+    map[pid].subjects.push(s);
+  });
+  return Object.values(map).sort((a,b)=>String(a.label).localeCompare(String(b.label),"it"));
+}
+
+function renderAdminProfessori(){
+  const el=$("#admin-body");
+  const profs=profsWithSubjects();
+  const senzaDoc=SUBJECTS.filter(s=>!s.conductaOnly&&!docOf(s.id));
+
+  // Statistiche per docente: moduli con voti e schede totali
+  const stats={};
+  let grandTotal=0;
+  profs.forEach(p=>{
+    let moduliVal=0,schede=0;
+    p.subjects.forEach(s=>{
+      const g=studentsForSubject(s.id).filter(st=>!!App.grades[s.id]?.[STUDENTS.indexOf(st)]).length;
+      if(g>0){moduliVal++;schede+=g;}
+    });
+    stats[p.id]={moduliVal,schede};
+    grandTotal+=schede;
+  });
+
+  el.innerHTML=`
+    <div class="info-box info-blue">👨‍🏫 Scarica le <strong>schede di valutazione</strong> di ogni docente della <strong>Classe ${CLASSE}</strong>. Ogni file riporta <strong>professore · classe · modulo</strong>. I moduli d'indirizzo sono trattati come pratici.</div>
+    ${grandTotal>0?`<button class="btn-print-grid" id="btn-prof-all" style="background:linear-gradient(135deg,#0F766E,#065F46)"><span style="font-size:22px">📦</span><div><div class="btn-lbl-big">Scarica TUTTI i professori</div><div class="btn-lbl-small">Un unico ZIP · cartella per ogni docente · Classe ${CLASSE}</div></div></button>`:""}
+    <div class="card">
+      <div class="card-head"><span class="sec-lbl">👨‍🏫 Docenti — Classe ${CLASSE}</span><span style="font-size:10px;color:#94A3B8">${profs.length} docenti</span></div>
+      ${profs.length===0?`<div style="padding:18px;text-align:center;font-size:13px;color:#94A3B8">Nessun docente assegnato in questa classe.</div>`:profs.map(p=>{
+        const st=stats[p.id];
+        const moduli=p.subjects.map(s=>s.short).join(", ");
+        const canDownload=st.schede>0;
+        return`<div class="st-mgmt" style="align-items:flex-start">
+          <div style="flex:1;padding:10px 0;min-width:0">
+            <div class="row-name" style="font-size:13px;font-weight:800;color:#0F172A">${p.label}</div>
+            <div class="row-meta" style="margin-top:2px">📚 ${p.subjects.length} moduli: <span style="color:#64748B">${moduli}</span></div>
+            <div class="row-meta" style="margin-top:2px">${st.schede>0?`✅ ${st.moduliVal} moduli con voti · <strong>${st.schede}</strong> schede`:`<span style="color:#EF4444">⚠️ Nessun voto inserito</span>`}</div>
+          </div>
+          <button class="btn-prof-dl" data-prof="${p.id}" ${canDownload?"":"disabled"} style="flex-shrink:0;align-self:center;height:34px;padding:0 14px;background:${canDownload?"#065F46":"#F1F5F9"};border:1px solid ${canDownload?"#059669":"#E2E8F0"};border-radius:9px;font-size:12px;font-weight:800;color:${canDownload?"white":"#94A3B8"};cursor:${canDownload?"pointer":"not-allowed"};white-space:nowrap">⬇️ Schede</button>
+        </div>`;
+      }).join("")}
+    </div>
+    ${senzaDoc.length>0?`<div class="info-box info-yellow">⚠️ <strong>${senzaDoc.length} moduli senza docente assegnato</strong> (${senzaDoc.map(s=>s.short).join(", ")}). Assegna un docente da <strong>Materie</strong> per includerli.</div>`:""}`;
+
+  $$(".btn-prof-dl[data-prof]").forEach(b=>{
+    if(b.disabled)return;
+    b.addEventListener("click",function(){exportProfSchede(this.dataset.prof);});
+  });
+  const ba=$("#btn-prof-all");if(ba)ba.addEventListener("click",exportClassProfsSchede);
+}

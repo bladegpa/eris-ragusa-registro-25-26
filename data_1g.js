@@ -37,7 +37,16 @@ const STUDENTS_1G = [
   {num:27, name:"GAGLIANO GIUSEPPE"},
   {num:28, name:"MILAZZO GABRIELE"},
   {num:29, name:"SOKMANI MOHAMED AMINE"},
+  {num:30, name:"BKHAIRIA AHMED"},   // ammesso il 30/03/2026 (vedi AMMISSIONI_1G)
 ];
+
+// ── Date di ammissione predefinite (indice 0-based nell'array STUDENTS_1G) ────
+// Vengono scritte UNA SOLA VOLTA su Firebase al primo avvio della classe 1G
+// (seed idempotente gestito da seedAmmissioniDefaults in logic.js). L'Admin può
+// comunque modificarle in qualsiasi momento da "Alunni" → la modifica prevale.
+const AMMISSIONI_1G = {
+  29: "30-03-2026",   // BKHAIRIA AHMED — 30° alunno, ammesso il 30/03/2026
+};
 
 const TN_1G = {
   fidilio:"Fidilio R.",    iabichella:"Iabichella O.", ciurciullo:"Ciurciullo L.",

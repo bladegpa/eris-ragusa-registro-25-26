@@ -24,6 +24,7 @@ function activateClass(cfg){
   DEFAULT_CORSO_MATERIA = cfg.defaultCorsoMateria;
   TUTOR_NAME          = cfg.tutorName;
   COURSE_TRACKS       = cfg.courseTracks;
+  AMMISSIONI_DEFAULTS = cfg.ammissioniDefaults || {};
 
   // Ricostruisce TEACHERS (array dinamico dipendente da SUBJECTS e TN)
   const m={};
@@ -83,6 +84,7 @@ function getClassConfig1G(){
     defaultCorsoMateria:  DEFAULT_CORSO_MATERIA_1G,
     tutorName:            TUTOR_NAME_1G,
     courseTracks:         COURSE_TRACKS_1G,
+    ammissioniDefaults:   (typeof AMMISSIONI_1G!=="undefined"?AMMISSIONI_1G:{}),
     fbPrefix:             "1G/",
   };
 }
@@ -124,6 +126,18 @@ function getClassConfig3F(){
     courseTracks:         COURSE_TRACKS_3F,
     fbPrefix:             "3F/",
   };
+}
+
+// ── Helper: tutte le configurazioni classe (ordine = ordine schermata) ───────
+function getAllClassConfigs(){
+  return [
+    getClassConfig1E(), getClassConfig1D(), getClassConfig1G(),
+    getClassConfig2C(), getClassConfig2D(), getClassConfig3F(),
+  ];
+}
+// ── Helper: configurazione di una classe dal suo codice ("1E","1G",...) ──────
+function getClassConfigByCode(code){
+  return (getAllClassConfigs().find(c=>c.classe===code)) || getClassConfig1E();
 }
 
 // ── Salva snapshot dei dati originali 1E appena data.js è caricato ──────────

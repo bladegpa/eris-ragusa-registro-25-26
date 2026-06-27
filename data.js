@@ -17,6 +17,10 @@ const SEGRETERIA_PIN="2222";
 const DEFAULT_PIN="1234";
 var TUTOR_NAME="Valentina Nonni";
 
+// Date di ammissione predefinite della classe attiva (swappate da activateClass).
+// {indiceAlunno0based: "GG-MM-AAAA"} — seedate una sola volta su Firebase.
+var AMMISSIONI_DEFAULTS={};
+
 var STUDENTS=[
   {num:1,  name:"AGOSTA GIOELE"},
   {num:2,  name:"ALESSANDRELLO NOEMI"},

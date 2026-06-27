@@ -322,3 +322,58 @@
   Cambiare anno scolastico            │ data.js (riga var ANNO=...)
 
 ═══════════════════════════════════════════════════════════════════════
+
+═══════════════════════════════════════════════════════════════════════
+  AGGIORNAMENTO — DATE DI AMMISSIONE PREDEFINITE + SCHEDE TUTTE LE CLASSI
+═══════════════════════════════════════════════════════════════════════
+
+  DATE DI AMMISSIONE PREDEFINITE (per classe)
+  ───────────────────────────────────────────
+  Ogni file classe può definire una costante AMMISSIONI_<CLASSE> con le
+  date di ammissione predefinite, indicizzate per POSIZIONE 0-based:
+
+      const AMMISSIONI_1G = { 29: "30-03-2026" };  // 30° alunno
+
+  Queste date vengono scritte UNA SOLA VOLTA su Firebase al primo avvio
+  della classe (seed idempotente, marcatore "ammissioni/_seeded").
+  L'Admin può poi modificarle da "Alunni": la modifica manuale prevale e
+  non viene mai sovrascritta dal seed.
+  • Classe 1G: aggiunto BKHAIRIA AHMED (num 30) con ammissione 30/03/2026.
+
+  SCHEDE DI VALUTAZIONE — TUTTE LE CLASSI (Admin)
+  ───────────────────────────────────────────────
+  Pannello Admin → Materie → "📚 Schede Valutazione — Tutte le Classi".
+  Genera un unico .zip con, per OGNI classe e OGNI modulo:
+    • Stampa_Schede_<M>.html   → schede pronte per la stampa (tutte)
+    • Riepilogo_<M>.html       → tabella voti/giudizi del modulo
+    • DOCX_<M>_<Classe>.zip    → un file .docx per ogni alunno valutato
+  I moduli d'indirizzo (corso ≠ "Comune") possono essere trattati come
+  "pratici" (modalità automatica) oppure tutti come "teorici".
+
+  CORREZIONE
+  ──────────
+  Il "BACKUP GENERALE" Excel ora include anche la classe 3F (prima
+  mancante): esporta tutte e 6 le classi.
+
+═══════════════════════════════════════════════════════════════════════
+  AGGIORNAMENTO — SCHEDA "PROFESSORI" PER CLASSE + BARRA DI AVANZAMENTO
+═══════════════════════════════════════════════════════════════════════
+
+  SCHEDA PROFESSORI (Pannello Admin → tab "👨‍🏫 Prof")
+  ───────────────────────────────────────────────────
+  Per la CLASSE attualmente aperta, elenca tutti i docenti con i moduli
+  che insegnano e il numero di schede disponibili. Per ciascun docente:
+    • "⬇️ Schede" → scarica un .zip con TUTTE le sue schede (tutti i moduli
+      con voti). Struttura: una cartella per modulo contenente i .docx
+      (uno per alunno), l'HTML stampabile e il riepilogo voti.
+    • "📦 Scarica TUTTI i professori" → un unico .zip con una cartella per
+      ogni docente.
+  Ogni file riporta sempre il riferimento a PROFESSORE · CLASSE · MODULO
+  (es. Scheda_Savasta_G_1G_M27_ROSSI_MARIO.docx).
+  I moduli d'indirizzo (corso ≠ "Comune") sono trattati come pratici.
+
+  BARRA DI AVANZAMENTO
+  ────────────────────
+  Tutte le generazioni lunghe (schede per materia, per docente, per tutti
+  i docenti, schede di tutte le classi e pagelle) mostrano ora una barra
+  di avanzamento con percentuale e dettaglio (classe/modulo/alunno).

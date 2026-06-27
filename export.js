@@ -948,24 +948,31 @@ async function exportSchedeZip(sid,isPratica){
   if(!subj){toast("❌ Materia non trovata","err");return;}
   const graded=studentsForSubject(sid).filter(st=>!!App.grades[sid]?.[STUDENTS.indexOf(st)]);
   if(!graded.length){toast("⚠️ Nessun voto inserito per "+subj.short,"err");return;}
-  toast("⏳ Generazione schede in corso...","info");
+  showProgress("📄 Schede — "+subj.short,"Classe "+CLASSE+" · "+subj.label);
   try{
     const outerZip=new JSZip();
     const htmlCards=[];
+    let done=0;const tot=graded.length;
     for(const st of graded){
       const i=STUDENTS.indexOf(st);
       const entry=App.grades[sid][i];
       const bytes=await buildDocxForStudent(subj,st,entry,isPratica);
       const safeName=st.name.replace(/[^A-Za-z0-9\s]/g,"").replace(/\s+/g,"_");
-      outerZip.file("Scheda_"+safeName+"_"+subj.short+".docx",bytes);
+      outerZip.file("Scheda_"+safeName+"_"+CLASSE+"_"+subj.short+".docx",bytes);
       htmlCards.push(buildHtmlCard(subj,st,entry,isPratica));
+      done++;
+      updateProgress(done/tot*95,done+"/"+tot+" schede",fmtName(st.name));
+      await uiTick();
     }
-    outerZip.file("Stampa_Schede.html",buildPrintHtml(subj,htmlCards));
-    outerZip.file("Riepilogo_Voti_"+subj.short+".html",buildRiepilogoHtml(subj,graded));
+    updateProgress(97,"Composizione file…","");
+    outerZip.file("Stampa_Schede_"+CLASSE+"_"+subj.short+".html",buildPrintHtml(subj,htmlCards));
+    outerZip.file("Riepilogo_"+CLASSE+"_"+subj.short+".html",buildRiepilogoHtml(subj,graded));
     const blob=await outerZip.generateAsync({type:"blob",compression:"DEFLATE",compressionOptions:{level:6}});
+    updateProgress(100,"Completato","");
     downloadBlob(blob,"Schede_"+subj.short+"_"+CLASSE+"_"+ANNO.replace("/","-")+".zip");
     toast("✅ "+graded.length+" schede + riepilogo esportati!","ok");
   }catch(e){console.error(e);toast("❌ Errore: "+e.message,"err");}
+  finally{hideProgress();}
 }
 
 // ═══════════════════════════════════════════════
@@ -1353,10 +1360,12 @@ async function exportPagelleZip(){
   if(typeof JSZip==="undefined"){toast("❌ Libreria JSZip non caricata.","err");return;}
   const tuttiGliAlunni=STUDENTS; // tutti: attivi, dimessi e trasferiti
   if(!tuttiGliAlunni.length){toast("⚠️ Nessun alunno","err");return;}
-  toast("⏳ Generazione pagelle in corso...","info");
+  const totAttivi=tuttiGliAlunni.filter((st,i)=>!App.dimessi[i]&&!App.trasferiti[i]).length;
+  showProgress("📋 Pagelle — Classe "+CLASSE,totAttivi+" pagelle DOCX");
   try{
     const outerZip=new JSZip();
     const htmlCards=[];
+    let done=0;
     for(const st of tuttiGliAlunni){
       const i=STUDENTS.indexOf(st);
       const dim=!!App.dimessi[i];
@@ -1364,15 +1373,21 @@ async function exportPagelleZip(){
       if(!dim&&!tr){
         const bytes=await buildDocxPagella(st,i);
         const safeName=st.name.replace(/[^A-Za-z0-9\s]/g,"").replace(/\s+/g,"_");
-        outerZip.file("Pagella_"+safeName+".docx",bytes);
+        outerZip.file("Pagella_"+safeName+"_"+CLASSE+".docx",bytes);
+        done++;
+        updateProgress(totAttivi>0?done/totAttivi*95:95,done+"/"+totAttivi+" pagelle",fmtName(st.name));
+        await uiTick();
       }
       htmlCards.push(buildHtmlPagella(st,i));
     }
-    outerZip.file("Stampa_Pagelle.html",buildPrintHtmlPagelle(htmlCards));
+    updateProgress(97,"Composizione file di stampa…","");
+    outerZip.file("Stampa_Pagelle_"+CLASSE+".html",buildPrintHtmlPagelle(htmlCards));
     const blob=await outerZip.generateAsync({type:"blob",compression:"DEFLATE",compressionOptions:{level:6}});
+    updateProgress(100,"Completato","");
     downloadBlob(blob,"Pagelle_"+CLASSE+"_"+ANNO.replace("/","-")+".zip");
     toast("✅ "+tuttiGliAlunni.length+" pagelle esportate!","ok");
   }catch(e){console.error(e);toast("❌ Errore pagelle: "+e.message,"err");}
+  finally{hideProgress();}
 }
 
 // ─── Descrizione testo voto di condotta ─────────────────────────────────────
@@ -1508,4 +1523,275 @@ function exportPagellineIntermHtml(){
       toast("✅ "+tuttiGliAlunni.length+" pagellini intermedi generati!","ok");
     }
   }catch(e){console.error(e);toast("❌ Errore: "+e.message,"err");}
+}
+
+// ═══════════════════════════════════════════════
+//  SCHEDE DI VALUTAZIONE — TUTTE LE CLASSI (solo Admin)
+// ═══════════════════════════════════════════════
+
+// Nome cartella sicuro per un modulo: "Mxx_NomeModulo" (senza prefisso e simboli)
+function safeModuleFolder(subj){
+  const clean=subj.label
+    .replace(/^[A-Za-z0-9]+[Eeb\d]* - /,"")
+    .replace(/[^A-Za-z0-9À-ÿ ]/g,"")
+    .trim().replace(/\s+/g,"_").slice(0,40);
+  return subj.short+(clean?"_"+clean:"");
+}
+
+// Carica da Firebase, per la classe ATTIVA, tutti i nodi necessari alle schede
+async function loadClassDataForExport(){
+  const [g,dm,cs,cm,di,tr]=await Promise.all([
+    fbRef("grades").get(),         fbRef("docenteMaterie").get(),
+    fbRef("corsiStudenti").get(),  fbRef("corsiMaterie").get(),
+    fbRef("dimessi").get(),        fbRef("trasferiti").get(),
+  ]);
+  App.grades         = g.exists()  ? g.val()  : {};
+  App.docenteMaterie = dm.exists() ? dm.val() : {};
+  App.corsiStudenti  = cs.exists() ? cs.val() : {};
+  App.corsiMaterie   = cm.exists() ? cm.val() : {};
+  App.dimessi        = di.exists() ? di.val() : {};
+  App.trasferiti     = tr.exists() ? tr.val() : {};
+}
+
+// Esporta in un UNICO ZIP le schede di valutazione di OGNI classe e OGNI modulo.
+// Struttura: Classe_XX / Myy_Modulo / { Stampa_Schede_Myy.html, Riepilogo_Myy.html,
+//            DOCX_Myy_XX.zip (un .docx per alunno valutato) }.
+// mode: "auto" → i moduli d'indirizzo (non "comune") sono trattati come PRATICI;
+//       "teoriche" → tutti i moduli trattati come teorici.
+async function exportAllClassesSchede(mode){
+  if(typeof JSZip==="undefined"){toast("❌ Libreria JSZip non caricata.","err");return;}
+  if(!DB){toast("❌ Connessione Firebase non disponibile","err");return;}
+  const isAuto=(mode!=="teoriche");
+
+  // Stato da ripristinare a fine operazione
+  const originalClass=App.currentClass;
+  const restoreCfg=getClassConfigByCode(originalClass);
+  const snap={
+    grades:App.grades,               docenteMaterie:App.docenteMaterie,
+    corsiStudenti:App.corsiStudenti, corsiMaterie:App.corsiMaterie,
+    dimessi:App.dimessi,             trasferiti:App.trasferiti,
+  };
+
+  stopSync(); // congela i listener Firebase: nessuna sovrascrittura durante l'export
+  showProgress("📚 Schede — Tutte le Classi","Lettura dati da Firebase…");
+
+  const mega=new JSZip();
+  let totSchede=0, totModuli=0;
+  const indexLines=[
+    "SCHEDE DI VALUTAZIONE — TUTTE LE CLASSI",
+    "A.S. "+ANNO,
+    "Generato il "+new Date().toLocaleString("it-IT"),
+    "Modalità prove pratiche: "+(isAuto?"automatica (moduli d'indirizzo = pratici)":"tutti i moduli teorici"),
+    "",
+  ];
+
+  try{
+    const configs=getAllClassConfigs();
+    const nClassi=configs.length;
+    for(let ci=0;ci<nClassi;ci++){
+      activateClass(configs[ci]);
+      await loadClassDataForExport();
+      updateProgress(ci/nClassi*100,"Classe "+CLASSE+" — preparazione…","Classe "+CLASSE);
+      await uiTick();
+
+      const classFolder=mega.folder("Classe_"+CLASSE);
+
+      // Pre-calcola i moduli con voti (per una barra di avanzamento precisa)
+      const work=[];
+      let classTotDocx=0;
+      for(const subj of SUBJECTS){
+        if(subj.conductaOnly)continue;
+        const graded=studentsForSubject(subj.id)
+          .filter(st=>!!App.grades[subj.id]?.[STUDENTS.indexOf(st)]);
+        if(graded.length){work.push({subj,graded});classTotDocx+=graded.length;}
+      }
+
+      let classModuli=0, classSchede=0, doneClass=0;
+      const classBase=ci/nClassi*100, classSpan=100/nClassi;
+
+      for(const {subj,graded} of work){
+        const isPratica=isAuto?(corsM(subj.id)!=="comune"):false;
+        const folder=classFolder.folder(safeModuleFolder(subj));
+        const htmlCards=[];
+        const docZip=new JSZip();
+
+        for(const st of graded){
+          const i=STUDENTS.indexOf(st);
+          const entry=App.grades[subj.id][i];
+          const bytes=await buildDocxForStudent(subj,st,entry,isPratica);
+          const safeName=st.name.replace(/[^A-Za-z0-9\s]/g,"").replace(/\s+/g,"_");
+          docZip.file("Scheda_"+safeName+"_"+CLASSE+"_"+subj.short+".docx",bytes);
+          htmlCards.push(buildHtmlCard(subj,st,entry,isPratica));
+          doneClass++;
+          const frac=classTotDocx>0?doneClass/classTotDocx:1;
+          updateProgress(classBase+frac*classSpan,"Classe "+CLASSE+" · "+subj.short+" — "+doneClass+"/"+classTotDocx,subj.label);
+          await uiTick();
+        }
+
+        // HTML stampabile (tutte le schede del modulo) + riepilogo voti
+        folder.file("Stampa_Schede_"+CLASSE+"_"+subj.short+".html",buildPrintHtml(subj,htmlCards));
+        folder.file("Riepilogo_"+CLASSE+"_"+subj.short+".html",buildRiepilogoHtml(subj,graded));
+        // ZIP con i .docx del modulo
+        const docBlob=await docZip.generateAsync({type:"uint8array",compression:"DEFLATE",compressionOptions:{level:6}});
+        folder.file("DOCX_"+CLASSE+"_"+subj.short+".zip",docBlob);
+
+        classModuli++; classSchede+=graded.length;
+        indexLines.push("• "+CLASSE+" / "+subj.short+" — "+
+          subj.label.replace(/^[A-Za-z0-9]+[Eeb\d]* - /,"")+" — "+
+          graded.length+" schede ("+(isPratica?"pratica":"teorica")+")");
+      }
+
+      if(classModuli===0){
+        classFolder.file("_NESSUN_VOTO.txt",
+          "Nessun voto inserito per la classe "+CLASSE+" al momento dell'esportazione.");
+        indexLines.push("• "+CLASSE+" — nessun voto inserito");
+      }
+      totModuli+=classModuli; totSchede+=classSchede;
+    }
+
+    indexLines.push("","TOTALE: "+totModuli+" moduli · "+totSchede+" schede.");
+    mega.file("_INDICE.txt",indexLines.join("\n"));
+
+    if(totModuli===0){toast("⚠️ Nessun voto inserito in nessuna classe.","err");return;}
+
+    updateProgress(100,"Compressione dell'archivio finale…","");
+    await uiTick();
+    const blob=await mega.generateAsync({type:"blob",compression:"DEFLATE",compressionOptions:{level:6}});
+    downloadBlob(blob,"Schede_Valutazione_TUTTE_LE_CLASSI_"+ANNO.replace("/","-")+".zip");
+    toast("✅ Esportate "+totSchede+" schede ("+totModuli+" moduli) di tutte le classi!","ok");
+  }catch(e){
+    console.error(e);
+    toast("❌ Errore esportazione schede: "+e.message,"err");
+  }finally{
+    hideProgress();
+    // Ripristino classe e stato originali + riattivazione sync realtime
+    activateClass(restoreCfg);
+    App.grades=snap.grades;               App.docenteMaterie=snap.docenteMaterie;
+    App.corsiStudenti=snap.corsiStudenti; App.corsiMaterie=snap.corsiMaterie;
+    App.dimessi=snap.dimessi;             App.trasferiti=snap.trasferiti;
+    startSync();
+    if(App.page!=="login")renderPage();
+  }
+}
+
+// ═══════════════════════════════════════════════
+//  SCHEDE PER PROFESSORE (classe attiva) — solo Admin
+// ═══════════════════════════════════════════════
+
+// Nome file/cartella sicuro per il docente (es. "Savasta G." → "Savasta_G")
+function profSafeName(label){
+  return String(label||"prof").replace(/[^A-Za-z0-9]+/g,"_").replace(/^_+|_+$/g,"").slice(0,30)||"prof";
+}
+
+// Scarica TUTTE le schede di UN docente (tutti i suoi moduli con voti) nella classe
+// attiva. Ogni file riporta professore · classe · modulo.
+async function exportProfSchede(profId){
+  if(typeof JSZip==="undefined"){toast("❌ Libreria JSZip non caricata.","err");return;}
+  const subjects=SUBJECTS.filter(s=>!s.conductaOnly&&docOf(s.id)===profId);
+  if(!subjects.length){toast("⚠️ Nessun modulo per questo docente","err");return;}
+  const profLabel=docNameOf(subjects[0].id)||profId;
+  const profFull =docFullOf(subjects[0].id)||profLabel;
+  const profSafe =profSafeName(profLabel);
+
+  // Moduli con almeno un voto
+  const work=[];let totDocx=0;
+  subjects.forEach(s=>{
+    const graded=studentsForSubject(s.id).filter(st=>!!App.grades[s.id]?.[STUDENTS.indexOf(st)]);
+    if(graded.length){work.push({subj:s,graded});totDocx+=graded.length;}
+  });
+  if(!work.length){toast("⚠️ Nessun voto inserito per i moduli di "+profLabel,"err");return;}
+
+  stopSync(); // evita che un refresh realtime chiuda la barra di avanzamento
+  showProgress("📄 Schede — "+profLabel,"Classe "+CLASSE+" · "+work.length+" moduli");
+  try{
+    const zip=new JSZip();
+    let done=0;
+    for(const {subj,graded} of work){
+      const isPratica=corsM(subj.id)!=="comune";
+      const folder=zip.folder(safeModuleFolder(subj));
+      const htmlCards=[];
+      for(const st of graded){
+        const i=STUDENTS.indexOf(st);
+        const entry=App.grades[subj.id][i];
+        const bytes=await buildDocxForStudent(subj,st,entry,isPratica);
+        const safeName=st.name.replace(/[^A-Za-z0-9\s]/g,"").replace(/\s+/g,"_");
+        folder.file("Scheda_"+profSafe+"_"+CLASSE+"_"+subj.short+"_"+safeName+".docx",bytes);
+        htmlCards.push(buildHtmlCard(subj,st,entry,isPratica));
+        done++;
+        updateProgress(done/totDocx*96,subj.short+" — "+done+"/"+totDocx+" schede",fmtName(st.name));
+        await uiTick();
+      }
+      folder.file("Schede_"+profSafe+"_"+CLASSE+"_"+subj.short+".html",buildPrintHtml(subj,htmlCards));
+      folder.file("Riepilogo_"+profSafe+"_"+CLASSE+"_"+subj.short+".html",buildRiepilogoHtml(subj,graded));
+    }
+    zip.file("_INDICE_"+profSafe+"_"+CLASSE+".txt",
+      "SCHEDE DI VALUTAZIONE\nDocente: "+profFull+"\nClasse: "+CLASSE+"  —  A.S. "+ANNO+
+      "\nModuli: "+work.map(w=>w.subj.short).join(", ")+
+      "\nSchede totali: "+totDocx+"\nGenerato il "+new Date().toLocaleString("it-IT"));
+    updateProgress(99,"Compressione dell'archivio…","");
+    await uiTick();
+    const blob=await zip.generateAsync({type:"blob",compression:"DEFLATE",compressionOptions:{level:6}});
+    updateProgress(100,"Completato","");
+    downloadBlob(blob,"Schede_Prof_"+profSafe+"_"+CLASSE+"_"+ANNO.replace("/","-")+".zip");
+    toast("✅ Schede di "+profLabel+" esportate ("+totDocx+" schede)","ok");
+  }catch(e){console.error(e);toast("❌ Errore: "+e.message,"err");}
+  finally{hideProgress();startSync();}
+}
+
+// Scarica le schede di TUTTI i docenti della classe attiva in un unico ZIP,
+// con una cartella per ciascun docente. File con riferimento prof · classe · modulo.
+async function exportClassProfsSchede(){
+  if(typeof JSZip==="undefined"){toast("❌ Libreria JSZip non caricata.","err");return;}
+  const map={};
+  SUBJECTS.forEach(s=>{if(s.conductaOnly)return;const pid=docOf(s.id);if(!pid)return;(map[pid]=map[pid]||[]).push(s);});
+
+  const profsWork=[];let totDocx=0;
+  Object.keys(map).forEach(pid=>{
+    const subs=map[pid];const w=[];
+    subs.forEach(s=>{const graded=studentsForSubject(s.id).filter(st=>!!App.grades[s.id]?.[STUDENTS.indexOf(st)]);if(graded.length){w.push({subj:s,graded});totDocx+=graded.length;}});
+    if(w.length)profsWork.push({pid,label:docNameOf(subs[0].id)||pid,full:docFullOf(subs[0].id)||pid,work:w});
+  });
+  if(!profsWork.length){toast("⚠️ Nessun voto inserito in questa classe","err");return;}
+  profsWork.sort((a,b)=>String(a.label).localeCompare(String(b.label),"it"));
+
+  stopSync();
+  showProgress("📦 Schede docenti — Classe "+CLASSE,profsWork.length+" docenti");
+  try{
+    const zip=new JSZip();
+    let done=0,totModuli=0,totSchede=0;
+    const idx=["SCHEDE DI VALUTAZIONE PER DOCENTE","Classe "+CLASSE+"  —  A.S. "+ANNO,"Generato il "+new Date().toLocaleString("it-IT"),""];
+    for(const p of profsWork){
+      const profSafe=profSafeName(p.label);
+      const profFolder=zip.folder("Prof_"+profSafe+"_"+CLASSE);
+      for(const {subj,graded} of p.work){
+        const isPratica=corsM(subj.id)!=="comune";
+        const folder=profFolder.folder(safeModuleFolder(subj));
+        const htmlCards=[];
+        for(const st of graded){
+          const i=STUDENTS.indexOf(st);
+          const entry=App.grades[subj.id][i];
+          const bytes=await buildDocxForStudent(subj,st,entry,isPratica);
+          const safeName=st.name.replace(/[^A-Za-z0-9\s]/g,"").replace(/\s+/g,"_");
+          folder.file("Scheda_"+profSafe+"_"+CLASSE+"_"+subj.short+"_"+safeName+".docx",bytes);
+          htmlCards.push(buildHtmlCard(subj,st,entry,isPratica));
+          done++;
+          updateProgress(done/totDocx*97,p.label+" · "+subj.short+" — "+done+"/"+totDocx,fmtName(st.name));
+          await uiTick();
+        }
+        folder.file("Schede_"+profSafe+"_"+CLASSE+"_"+subj.short+".html",buildPrintHtml(subj,htmlCards));
+        folder.file("Riepilogo_"+profSafe+"_"+CLASSE+"_"+subj.short+".html",buildRiepilogoHtml(subj,graded));
+        totModuli++;totSchede+=graded.length;
+        idx.push("• "+p.label+" / "+subj.short+" — "+graded.length+" schede");
+      }
+    }
+    idx.push("","TOTALE: "+profsWork.length+" docenti · "+totModuli+" moduli · "+totSchede+" schede");
+    zip.file("_INDICE_"+CLASSE+".txt",idx.join("\n"));
+    updateProgress(99,"Compressione dell'archivio…","");
+    await uiTick();
+    const blob=await zip.generateAsync({type:"blob",compression:"DEFLATE",compressionOptions:{level:6}});
+    updateProgress(100,"Completato","");
+    downloadBlob(blob,"Schede_Docenti_"+CLASSE+"_"+ANNO.replace("/","-")+".zip");
+    toast("✅ Schede di "+profsWork.length+" docenti esportate ("+totSchede+" schede)","ok");
+  }catch(e){console.error(e);toast("❌ Errore: "+e.message,"err");}
+  finally{hideProgress();startSync();}
 }
