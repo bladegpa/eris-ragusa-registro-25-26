@@ -1510,6 +1510,10 @@ function renderAdminAlunni(){
   const nDim=dimN(),nTras=trasN();
   const isMonopercorso=!COURSE_TRACKS.track2||!COURSE_TRACKS.track2.id;
   const amm=App.ammissioni||{};
+  // Conteggi esito finale (tra gli alunni attivi)
+  const activeIdx=STUDENTS.map((_,i)=>i).filter(i=>!App.dimessi[i]&&!App.trasferiti[i]);
+  const nNonAmm=activeIdx.filter(i=>esitoOf(i)==="non_ammesso").length;
+  const nAmm=activeIdx.length-nNonAmm;
 
   // Helper: input data GG-MM-AAAA con picker (usa type=date internamente, mostra DD-MM-YYYY)
   const dateInp=(id,val,cls,dataAttr,placeholder)=>{
@@ -1527,7 +1531,8 @@ function renderAdminAlunni(){
       ${isAdm?`<div class="stat-box"><div class="stat-n" style="font-size:18px;color:#94A3B8">${unN}</div><div class="stat-l">Da assegn.</div></div>`:''}
     </div>
     ${!isT?`<div class="info-box info-yellow">⚠️ Assegna ogni alunno al corso. I <strong>DIMESSI</strong> e i <strong>TRASFERITI</strong> non sono visibili ai docenti.</div>`
-           :`<div class="info-box info-green">✅ Tutor — puoi visualizzare lo stato degli alunni della classe.</div>`}
+           :`<div class="info-box info-green">✅ Tutor — puoi visualizzare lo stato degli alunni e impostare l'esito finale.</div>`}
+    ${(isAdm||isT)?`<div class="info-box info-blue" style="display:flex;justify-content:center;gap:18px;align-items:center">🎓 Esito finale &nbsp;<span>✅ Ammessi: <strong>${nAmm}</strong></span><span>⛔ Non ammessi: <strong style="color:#DC2626">${nNonAmm}</strong></span></div>`:""}
 
     ${(!isRO&&!isT)?`<div class="card" style="margin-bottom:10px">
       <div class="card-head"><span class="sec-lbl">📅 Date di Ammissione</span></div>
@@ -1599,6 +1604,7 @@ function renderAdminAlunni(){
       <div class="card-head"><span class="sec-lbl">👥 Gestione alunni — ${STUDENTS.length} iscritti</span></div>
       ${STUDENTS.map((st,i)=>{
         const dim=!!App.dimessi[i],tr=!!App.trasferiti[i];
+        const es=esitoOf(i);
         const cs=corsS(i);
         const inactive=dim||tr;
         const ma=inactive?null:calcMedia(i,SUBJECTS),mp=inactive?null:calcMP(i,SUBJECTS);
@@ -1616,7 +1622,8 @@ function renderAdminAlunni(){
               ?`<div style="font-size:10px;color:#EF4444;font-weight:700">🚫 DIMESSO${dd?` — <span style="color:#DC2626">dal ${dd}</span>`:""}</div>`
               :tr
               ?`<div style="font-size:10px;color:#EA580C;font-weight:700">🔄 TRASFERITO${td?` — <span style="color:#C2410C">dal ${td}</span>`:""}</div>`
-              :`<div style="font-size:10px;color:#64748B">M.A.: <span style="color:${maC};font-weight:700">${maS}</span> &nbsp;M.P.: <span style="color:${mpC};font-weight:700">${mpS}</span></div>`}
+              :`<div style="font-size:10px;color:#64748B">M.A.: <span style="color:${maC};font-weight:700">${maS}</span> &nbsp;M.P.: <span style="color:${mpC};font-weight:700">${mpS}</span></div>
+                 ${(isAdm||isT)?`<button class="btn-esito" data-esito="${i}" style="margin-top:5px;height:24px;padding:0 10px;border-radius:7px;border:1.5px solid ${es==="non_ammesso"?"#DC2626":"#059669"};background:${es==="non_ammesso"?"#FEF2F2":"#F0FDF4"};color:${es==="non_ammesso"?"#DC2626":"#059669"};font-size:11px;font-weight:800;cursor:pointer;white-space:nowrap">${es==="non_ammesso"?"⛔ NON AMMESSO":"✅ AMMESSO"}</button>`:""}`}
           </div>
           ${(!isRO&&!isT&&!inactive)?`<select class="cors-sel" data-cors-s="${i}">
             <option value=""${!cs?" selected":""}>— Nessuno</option>
@@ -1679,6 +1686,10 @@ function renderAdminAlunni(){
         });
       });
     }
+  }
+  // Switch AMMESSO / NON AMMESSO — Admin e Tutor
+  if(isAdm||isT){
+    $$(".btn-esito[data-esito]").forEach(btn=>{btn.addEventListener("click",function(){toggleEsito(parseInt(this.dataset.esito));});});
   }
 }
 
@@ -2056,6 +2067,7 @@ function renderAdminProfessori(){
   const el=$("#admin-body");
   const profs=profsWithSubjects();
   const senzaDoc=SUBJECTS.filter(s=>!s.conductaOnly&&!docOf(s.id));
+  const canPagelle=App.teacher.isAdmin||App.teacher.isTutor;
 
   // Statistiche per docente: moduli con voti e schede totali
   const stats={};
@@ -2072,6 +2084,13 @@ function renderAdminProfessori(){
 
   el.innerHTML=`
     <div class="info-box info-blue">👨‍🏫 Scarica le <strong>schede di valutazione</strong> di ogni docente della <strong>Classe ${CLASSE}</strong>. Ogni file riporta <strong>professore · classe · modulo</strong>. I moduli d'indirizzo sono trattati come pratici.</div>
+    ${canPagelle?`<div class="card" style="margin-bottom:10px">
+      <div class="card-head"><span class="sec-lbl">🧾 Pagelle — Classe ${CLASSE}</span></div>
+      <div style="padding:10px 12px;display:flex;flex-direction:column;gap:8px">
+        <button class="btn-print-grid" id="btn-prof-pag-fin" style="background:linear-gradient(135deg,#0369A1,#0F2557)"><span style="font-size:22px">🧾</span><div><div class="btn-lbl-big">Pagelle Finali</div><div class="btn-lbl-small">DOCX + HTML stampabile · tutti gli alunni attivi</div></div></button>
+        <button class="btn-print-grid" id="btn-prof-pag-int" style="background:linear-gradient(135deg,#0F766E,#065F46)"><span style="font-size:22px">📄</span><div><div class="btn-lbl-big">Pagellino Intermedio</div><div class="btn-lbl-small">HTML stampabile · valutazione al 50% del percorso</div></div></button>
+      </div>
+    </div>`:""}
     ${grandTotal>0?`<button class="btn-print-grid" id="btn-prof-all" style="background:linear-gradient(135deg,#0F766E,#065F46)"><span style="font-size:22px">📦</span><div><div class="btn-lbl-big">Scarica TUTTI i professori</div><div class="btn-lbl-small">Un unico ZIP · cartella per ogni docente · Classe ${CLASSE}</div></div></button>`:""}
     <div class="card">
       <div class="card-head"><span class="sec-lbl">👨‍🏫 Docenti — Classe ${CLASSE}</span><span style="font-size:10px;color:#94A3B8">${profs.length} docenti</span></div>
@@ -2096,4 +2115,6 @@ function renderAdminProfessori(){
     b.addEventListener("click",function(){exportProfSchede(this.dataset.prof);});
   });
   const ba=$("#btn-prof-all");if(ba)ba.addEventListener("click",exportClassProfsSchede);
+  const bpf=$("#btn-prof-pag-fin");if(bpf)bpf.addEventListener("click",exportPagelleZip);
+  const bpi=$("#btn-prof-pag-int");if(bpi)bpi.addEventListener("click",exportPagellineIntermHtml);
 }

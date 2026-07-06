@@ -1012,6 +1012,9 @@ async function buildDocxPagella(st,idx){
   const condEntry=App.grades["condotta"]?.[idx];
   const votoCond=condEntry?condEntry.value:"—";
 
+  // Esito finale scrutinio (AMMESSO / NON AMMESSO)
+  const esito=esitoOf(idx);
+
   // Riga "CLASSE: X  ANNO SCOLASTICO: 2025/2026"
   const classeAnno="CLASSE: "+CLASSE+"     ANNO SCOLASTICO: "+ANNO;
 
@@ -1044,7 +1047,7 @@ async function buildDocxPagella(st,idx){
           <w:p><w:pPr><w:spacing w:line="360" w:lineRule="auto"/><w:jc w:val="center"/></w:pPr><w:r><w:rPr><w:b/><w:rFonts w:asciiTheme="minorHAnsi" w:hAnsiTheme="minorHAnsi"/></w:rPr><w:t>CHE</w:t></w:r></w:p>
           <w:p><w:pPr><w:spacing w:line="480" w:lineRule="auto"/><w:jc w:val="center"/></w:pPr><w:r><w:rPr><w:rFonts w:asciiTheme="minorHAnsi" w:hAnsiTheme="minorHAnsi"/></w:rPr><w:t xml:space="preserve">L&#x2019;allievo </w:t></w:r></w:p>
           <w:p><w:pPr><w:spacing w:line="480" w:lineRule="auto"/><w:jc w:val="center"/></w:pPr><w:r><w:rPr><w:b/><w:rFonts w:asciiTheme="minorHAnsi" w:hAnsiTheme="minorHAnsi"/></w:rPr><w:t>{{ALUNNO}}</w:t></w:r></w:p>
-          <w:p><w:pPr><w:spacing w:line="480" w:lineRule="auto"/><w:jc w:val="center"/></w:pPr><w:r><w:rPr><w:rFonts w:asciiTheme="minorHAnsi" w:hAnsiTheme="minorHAnsi"/></w:rPr><w:t xml:space="preserve">&#xe8; stato </w:t></w:r><w:r><w:rPr><w:b/><w:u w:val="single"/><w:rFonts w:asciiTheme="minorHAnsi" w:hAnsiTheme="minorHAnsi"/></w:rPr><w:t>AMMESSO</w:t></w:r><w:r><w:rPr><w:rFonts w:asciiTheme="minorHAnsi" w:hAnsiTheme="minorHAnsi"/></w:rPr><w:t xml:space="preserve"> alla </w:t></w:r></w:p>
+          <w:p><w:pPr><w:spacing w:line="480" w:lineRule="auto"/><w:jc w:val="center"/></w:pPr><w:r><w:rPr><w:rFonts w:asciiTheme="minorHAnsi" w:hAnsiTheme="minorHAnsi"/></w:rPr><w:t xml:space="preserve">${esito==="non_ammesso"?"non &#xe8; stato ":"&#xe8; stato "}</w:t></w:r><w:r><w:rPr><w:b/><w:u w:val="single"/><w:rFonts w:asciiTheme="minorHAnsi" w:hAnsiTheme="minorHAnsi"/></w:rPr><w:t>AMMESSO</w:t></w:r><w:r><w:rPr><w:rFonts w:asciiTheme="minorHAnsi" w:hAnsiTheme="minorHAnsi"/></w:rPr><w:t xml:space="preserve"> alla </w:t></w:r></w:p>
           <w:p><w:pPr><w:spacing w:line="480" w:lineRule="auto"/><w:jc w:val="center"/></w:pPr><w:r><w:rPr><w:b/><w:rFonts w:asciiTheme="minorHAnsi" w:hAnsiTheme="minorHAnsi"/></w:rPr><w:t xml:space="preserve">{{ANNUALITA}} con il seguente giudizio finale:</w:t></w:r></w:p>
           <w:p><w:pPr><w:spacing w:line="480" w:lineRule="auto"/><w:jc w:val="center"/></w:pPr><w:r><w:rPr><w:b/><w:sz w:val="28"/><w:szCs w:val="28"/><w:rFonts w:asciiTheme="minorHAnsi" w:hAnsiTheme="minorHAnsi"/></w:rPr><w:t>{{VALUTAZIONE MEDIA PONDERATA}}</w:t></w:r></w:p>
           <w:p><w:pPr><w:spacing w:line="276" w:lineRule="auto"/><w:jc w:val="center"/></w:pPr><w:r><w:rPr><w:i/><w:rFonts w:asciiTheme="minorHAnsi" w:hAnsiTheme="minorHAnsi"/></w:rPr><w:t>Condotta:</w:t></w:r></w:p>
@@ -1186,6 +1189,7 @@ function buildHtmlPagella(st,idx){
   const giudizio=mpToGiudizioSintetico(mp);
   const condEntry=App.grades["condotta"]?.[idx];
   const votoCond=condEntry?condEntry.value:"—";
+  const esito=esitoOf(idx);
   const alunno=fmtName(st.name);
   const annoN=parseInt(String(CLASSE).replace(/\D/g,""))||1;
   const annoLabel=annoN===1?"II Annualità":annoN===2?"III Annualità":annoN===3?"IV Annualità":"V Annualità";
@@ -1209,7 +1213,7 @@ function buildHtmlPagella(st,idx){
       <div style="font-size:10pt;font-weight:800;letter-spacing:1px">SI ATTESTA CHE</div>
       <div style="font-size:9pt">L&apos;allievo</div>
       <div style="font-size:11pt;font-weight:900;color:#0F2557">${alunno}</div>
-      <div style="font-size:9pt">è stato <strong><u>AMMESSO</u></strong> alla</div>
+      <div style="font-size:9pt">${esito==="non_ammesso"?`<strong style="color:#DC2626">non</strong> è stato <strong><u>AMMESSO</u></strong>`:`è stato <strong><u>AMMESSO</u></strong>`} alla</div>
       <div style="font-size:10pt;font-weight:800">${annoLabel}</div>
       <div style="font-size:8pt">con il seguente giudizio finale:</div>
       <div style="font-size:18pt;font-weight:900;color:${giudizioColor(giudizio)};margin:4px 0">${giudizio}</div>

@@ -109,6 +109,20 @@ async function toggleTrasferito(idx){
   renderAdminAlunni();
 }
 
+// ─── Esito finale: AMMESSO / NON AMMESSO (Admin e Tutor) ─────────────────────
+// App.esiti[idx] = "ammesso" | "non_ammesso". Se assente → trattato come AMMESSO
+// nella pagella finale (retrocompatibile col comportamento originale).
+function esitoOf(i){return App.esiti?.[i]==="non_ammesso"?"non_ammesso":"ammesso";}
+async function toggleEsito(idx){
+  if(!(App.teacher&&(App.teacher.isAdmin||App.teacher.isTutor))){toast("⛔ Solo Admin e Tutor","err");return;}
+  if(!App.esiti)App.esiti={};
+  const nuovo=esitoOf(idx)==="ammesso"?"non_ammesso":"ammesso";
+  App.esiti[idx]=nuovo;
+  await fbSet("esiti/"+idx,nuovo);
+  toast((nuovo==="non_ammesso"?"⛔ ":"✅ ")+fmtName(STUDENTS[idx].name)+" — "+(nuovo==="non_ammesso"?"NON AMMESSO":"AMMESSO"),"ok");
+  renderAdminAlunni();
+}
+
 
 async function saveDocenteMateria(sid,id,name,full){
   // Se è un docente completamente nuovo (custom), crea il suo account
@@ -380,10 +394,12 @@ function startSync(){
   fbRef("condotta_parziale").on("value",snap=>{App.condottaParziale=snap.exists()?snap.val():{};if(App.page!=="login")renderPage();});
   // Sync blocco per singola materia
   fbRef("subjectsLocked").on("value",snap=>{App.subjectsLocked=snap.exists()?snap.val():{};if(App.page!=="login")renderPage();});
+  // Sync esiti finali AMMESSO/NON AMMESSO (Admin e Tutor)
+  fbRef("esiti").on("value",snap=>{App.esiti=snap.exists()?snap.val():{};if(App.page!=="login")renderPage();});
   // Seed una-tantum delle date di ammissione predefinite della classe attiva
   seedAmmissioniDefaults();
 }
-function stopSync(){if(DB){try{fbRef("grades").off();fbRef("dimessi").off();fbRef("corsiStudenti").off();fbRef("corsiMaterie").off();fbRef("docenteMaterie").off();fbRef("accessLog").off();fbRef("ammissioni").off();fbRef("dimissioni_date").off();fbRef("trasferiti").off();fbRef("trasferiti_date").off();fbRef("customTeachers").off();fbRef("pins").off();fbRef("condotta_parziale").off();fbRef("subjectsLocked").off();}catch(e){}} App.fbL=null;}
+function stopSync(){if(DB){try{fbRef("grades").off();fbRef("dimessi").off();fbRef("corsiStudenti").off();fbRef("corsiMaterie").off();fbRef("docenteMaterie").off();fbRef("accessLog").off();fbRef("ammissioni").off();fbRef("dimissioni_date").off();fbRef("trasferiti").off();fbRef("trasferiti_date").off();fbRef("customTeachers").off();fbRef("pins").off();fbRef("condotta_parziale").off();fbRef("subjectsLocked").off();fbRef("esiti").off();}catch(e){}} App.fbL=null;}
 // ─── Helper Firebase con prefisso classe ────────────────────────────────────
 // Tutti i nodi Firebase classe-specifici passano per fbRef.
 // 1E: prefisso "" → nodi a radice (compatibilità totale)
@@ -428,7 +444,7 @@ function doLogout(){
   App.grades={};App.dimessi={};App.corsiStudenti={};App.corsiMaterie={};
   App.docenteMaterie={};App.customTeachers={};App.accessLog={};
   App.ammissioni={defaultDate:"",overrides:{}};App.dimissioni={};App.pins={};
-  App.trasferiti={};App.trasferiti_date={};App.condottaParziale={};App.subjectsLocked={};
+  App.trasferiti={};App.trasferiti_date={};App.condottaParziale={};App.subjectsLocked={};App.esiti={};
   renderClassSelect();
 }
 

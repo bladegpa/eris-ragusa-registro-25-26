@@ -377,3 +377,30 @@
   Tutte le generazioni lunghe (schede per materia, per docente, per tutti
   i docenti, schede di tutte le classi e pagelle) mostrano ora una barra
   di avanzamento con percentuale e dettaglio (classe/modulo/alunno).
+
+═══════════════════════════════════════════════════════════════════════
+  AGGIORNAMENTO — PAGELLE NEL TAB PROF (TUTOR) + ESITO AMMESSO/NON AMMESSO
+═══════════════════════════════════════════════════════════════════════
+
+  PAGELLE NEL TAB "👨‍🏫 Prof" (Admin e Tutor)
+  ────────────────────────────────────────────
+  Nel tab Prof, oltre alle schede docente, sono disponibili per Admin e
+  Tutor due pulsanti: "🧾 Pagelle Finali" (DOCX + HTML stampabile) e
+  "📄 Pagellino Intermedio" (HTML stampabile). La Segreteria vede solo la
+  sezione schede docente.
+
+  ESITO FINALE: AMMESSO / NON AMMESSO (Admin e Tutor)
+  ───────────────────────────────────────────────────
+  Nel tab "👥 Alunni", sotto ogni alunno attivo, un pulsante permette di
+  commutare tra ✅ AMMESSO e ⛔ NON AMMESSO (solo Admin e Tutor; la
+  Segreteria non lo vede). Lo stato è salvato su Firebase (nodo "esiti",
+  separato per classe) e si riflette automaticamente nella PAGELLA FINALE:
+    • AMMESSO      → «è stato AMMESSO alla …»
+    • NON AMMESSO  → «non è stato AMMESSO alla …»
+  Se non impostato, l'alunno è considerato AMMESSO (comportamento invariato
+  rispetto a prima). In alto è mostrato il riepilogo Ammessi / Non ammessi.
+
+  TAB PROF PER SEGRETERIA
+  ───────────────────────
+  Il tab "👨‍🏫 Prof" (download schede) è disponibile per Admin, Tutor e
+  Segreteria.

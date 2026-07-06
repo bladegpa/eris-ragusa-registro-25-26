@@ -227,5 +227,6 @@ const App={
   currentClass:"1E",  // classe attualmente attiva
   condottaParziale:{}, // {teacherId: {studentIdx: {value,ts,docente}}} — voti condotta parziali
   subjectsLocked:{},   // {sid: true} — materie bloccate (docenti non possono modificare)
+  esiti:{},            // {idx: "ammesso"|"non_ammesso"} — esito finale scrutinio
 };
 
