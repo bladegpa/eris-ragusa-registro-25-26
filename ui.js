@@ -1330,6 +1330,7 @@ ${isRO?`<div class="info-box info-blue" style="margin:8px 14px;border-radius:10p
   <button class="tab-btn${App.adminTab==="alunni"?" active":""}" data-tab="alunni">👥 Alunni</button>
   <button class="tab-btn${App.adminTab==="riepilogo"?" active":""}" data-tab="riepilogo">📊 Riepilogo</button>
   <button class="tab-btn${App.adminTab==="professori"?" active":""}" data-tab="professori">👨‍🏫 Prof</button>
+  ${isClasseFinale()?`<button class="tab-btn${App.adminTab==="finale"?" active":""}" data-tab="finale">🎓 Finale</button>`:""}
   ${App.teacher.isAdmin?`<button class="tab-btn${App.adminTab==="impostazioni"?" active":""}" data-tab="impostazioni">⚙️ PIN</button><button class="tab-btn${App.adminTab==="log"?" active":""}" data-tab="log">📋 Log</button>`:""}
 </div>
 <div id="admin-body" class="page-wrap"></div>
@@ -1347,6 +1348,7 @@ function renderAdminBody(){
   if(App.adminTab==="materie")renderAdminMaterie();
   else if(App.adminTab==="alunni")renderAdminAlunni();
   else if(App.adminTab==="professori")renderAdminProfessori();
+  else if(App.adminTab==="finale"&&isClasseFinale())renderAdminFinale();
   else if(App.adminTab==="impostazioni")renderAdminImpostazioni();
   else if(App.adminTab==="log")renderAdminLog();
   else renderAdminRiepilogo();
@@ -2117,4 +2119,80 @@ function renderAdminProfessori(){
   const ba=$("#btn-prof-all");if(ba)ba.addEventListener("click",exportClassProfsSchede);
   const bpf=$("#btn-prof-pag-fin");if(bpf)bpf.addEventListener("click",exportPagelleZip);
   const bpi=$("#btn-prof-pag-int");if(bpi)bpi.addEventListener("click",exportPagellineIntermHtml);
+}
+
+// ═══════════════════════════════════════════════
+//  GRIGLIA FINALE (solo Classe 3F) ──────────────────────────────────────────
+//  Media 1°/2°/3° Anno (0-10) → Media Triennale (centesimi) 80% + Prova
+//  Multidisciplinare (centesimi) 20% → Voto Finale (centesimi).
+//  Solo l'Admin può inserire i valori; Tutor e Segreteria vedono in sola lettura.
+// ═══════════════════════════════════════════════
+function gradeColorCento(v){ // colore su scala 0-100, soglie equivalenti a 6/7/9 su 10
+  if(v===null||v===undefined)return"#94A3B8";
+  if(v<60)return"#EF4444";if(v<70)return"#CA8A04";if(v<90)return"#D97706";return"#059669";
+}
+function gradeBgCento(v){
+  if(v===null||v===undefined)return"transparent";
+  if(v<60)return"#FEF2F2";if(v<70)return"#FEFCE8";if(v<90)return"#FFFBEB";return"#ECFDF5";
+}
+
+function renderAdminFinale(){
+  const el=$("#admin-body");
+  if(!isClasseFinale()){el.innerHTML=`<div class="info-box info-yellow">⚠️ La Griglia Finale è disponibile solo per la Classe 3F.</div>`;return;}
+  const isAdm=App.teacher.isAdmin;
+  const sts=activeStudents();
+
+  el.innerHTML=`
+    <div class="info-box info-blue">🎓 <strong>Griglia Finale — Classe 3F</strong>. Media Voto Triennale = media aritmetica di 1°, 2° e 3° anno (×10, in centesimi). Voto Finale = 80% Media Triennale + 20% Prova Multidisciplinare.
+    ${!isAdm?`<br><span style="color:#92400E">🔒 Sola lettura — solo l'Admin può modificare i valori.</span>`:""}</div>
+    <div class="tbl-wrap"><table class="sum-tbl">
+      <thead>
+        <tr>
+          <th class="th-name">Alunno</th>
+          <th title="Media Voti 1° Anno (0-10, inserita dall'Admin)">📗<br><span style="font-size:9px;font-weight:700">Media<br>1°A</span></th>
+          <th title="Media Voti 2° Anno (0-10, inserita dall'Admin)">📘<br><span style="font-size:9px;font-weight:700">Media<br>2°A</span></th>
+          <th title="Media Voti 3° Anno — calcolata automaticamente dai moduli 3F con voto, esclusa condotta">📙<br><span style="font-size:9px;font-weight:700">Media<br>3°A</span></th>
+          <th title="Media aritmetica di 1°+2°+3° anno, ×10 (in centesimi)">🎓<br><span style="font-size:9px;font-weight:700">Media<br>Trienn./100</span></th>
+          <th title="Prova Multidisciplinare (0-100, inserita dall'Admin)">📝<br><span style="font-size:9px;font-weight:700">Prova<br>Multidisc./100</span></th>
+          <th title="80% Media Triennale + 20% Prova Multidisciplinare">🏆<br><span style="font-size:9px;font-weight:700">Voto<br>Finale/100</span></th>
+        </tr>
+      </thead>
+      <tbody>
+        ${sts.map(st=>{
+          const i=STUDENTS.indexOf(st);
+          const raw=finaleRawOf(i);
+          const m1=raw.m1||"", m2=raw.m2||"";
+          const m3=media3AnnoOf(i);
+          const mt=calcMediaTriennale(i);
+          const prova=raw.prova||"";
+          const vf=calcVotoFinaleGriglia(i);
+          const m3S=m3!==null?m3.toFixed(1):"—";
+          const m3C=m3!==null?gradeColor(m3):"#CBD5E1";
+          const mtS=mt!==null?mt.toFixed(2):"—";
+          const vfS=vf!==null?vf.toFixed(2):"—";
+          const inp=(field,val,ph)=>isAdm
+            ?`<input type="text" inputmode="decimal" class="finale-inp" data-finale-i="${i}" data-finale-f="${field}" value="${val}" placeholder="${ph}" style="width:52px;text-align:center;border:1.5px solid #E2E8F0;border-radius:7px;padding:5px 3px;font-size:12px;font-weight:700">`
+            :`<span style="font-weight:700;color:${val?"#0F172A":"#CBD5E1"}">${val||"—"}</span>`;
+          return`<tr>
+            <td class="td-name">${fmtName(st.name)}</td>
+            <td style="text-align:center">${inp("m1",m1,"0-10")}</td>
+            <td style="text-align:center">${inp("m2",m2,"0-10")}</td>
+            <td class="td-ma" style="color:${m3C}">${m3S}</td>
+            <td class="td-mp" style="color:${gradeColorCento(mt)};background:${gradeBgCento(mt)}">${mtS}</td>
+            <td style="text-align:center">${inp("prova",prova,"0-100")}</td>
+            <td class="td-vf" style="color:${gradeColorCento(vf)};background:${gradeBgCento(vf)}">${vfS}</td>
+          </tr>`;
+        }).join("")}
+      </tbody>
+    </table></div>
+    ${sts.length===0?`<div style="padding:18px;text-align:center;font-size:13px;color:#94A3B8">Nessun alunno attivo in questa classe.</div>`:""}`;
+
+  if(isAdm){
+    $$(".finale-inp[data-finale-i]").forEach(inp=>{
+      inp.addEventListener("change",function(){
+        const i=parseInt(this.dataset.finaleI),field=this.dataset.finaleF;
+        saveFinaleValue(i,field,this.value).then(()=>renderAdminFinale());
+      });
+    });
+  }
 }

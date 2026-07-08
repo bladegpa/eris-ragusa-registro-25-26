@@ -404,3 +404,26 @@
   ───────────────────────
   Il tab "👨‍🏫 Prof" (download schede) è disponibile per Admin, Tutor e
   Segreteria.
+
+═══════════════════════════════════════════════════════════════════════
+  AGGIORNAMENTO — GRIGLIA FINALE (solo Classe 3F)
+═══════════════════════════════════════════════════════════════════════
+
+  Nel pannello Admin, quando la classe attiva è la 3F, compare il tab
+  "🎓 Finale" con una tabella dedicata per ogni alunno attivo:
+
+    • Media 1° Anno   — inserita dall'Admin, scala 0-10, 1 decimale.
+    • Media 2° Anno   — inserita dall'Admin, scala 0-10, 1 decimale.
+    • Media 3° Anno   — CALCOLATA IN AUTOMATICO: media aritmetica di tutti
+      i voti dei moduli 3F già inseriti quest'anno (condotta esclusa).
+    • Media Voto Triennale (in centesimi) = media aritmetica di
+      (1°+2°+3° anno) moltiplicata ×10. Vuota finché non sono presenti
+      tutti e tre i termini.
+    • Prova Multidisciplinare — inserita dall'Admin, scala 0-100.
+    • Voto Finale (in centesimi) = Media Triennale×80% + Prova×20%.
+
+  Solo l'ADMIN può inserire/modificare i valori (Media 1°/2° anno e Prova
+  Multidisciplinare); Tutor e Segreteria vedono la griglia in sola lettura.
+  I valori sono validati (0-10 per le medie annuali, 0-100 per la prova) e
+  salvati su Firebase nel nodo "finale" (isolato per classe, come tutti gli
+  altri dati). La Griglia Finale è visibile e utilizzabile SOLO per la 3F.

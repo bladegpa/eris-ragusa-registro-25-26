@@ -311,6 +311,64 @@ function calcMP(idx,cols){
   return sw>0?sv/sw:null;
 }
 
+// ═══════════════════════════════════════════════
+//  GRIGLIA FINALE (solo Classe 3F, solo Admin) ─────────────────────────────
+//  Colonne: Media 1°Anno e 2°Anno (0-10, inserite dall'Admin) · Media 3°Anno
+//  (calcolata in automatico dai voti dei moduli 3F già inseriti quest'anno,
+//  esclusa condotta) · Media Triennale in centesimi (media aritmetica delle
+//  tre, ×10) · Prova Multidisciplinare (0-100, inserita dall'Admin) · Voto
+//  Finale in centesimi (80% Media Triennale + 20% Prova Multidisciplinare).
+// ═══════════════════════════════════════════════
+function isClasseFinale(){return CLASSE==="3F";} // classe/i abilitate alla Griglia Finale
+
+// Media 3° anno: automatica, media aritmetica dei moduli con voto (esclusa condotta)
+function media3AnnoOf(idx){return calcMedia(idx,SUBJECTS.filter(s=>!s.conductaOnly));}
+
+// Valori grezzi inseriti dall'Admin per l'alunno (stringhe, come digitate)
+function finaleRawOf(idx){return App.finale?.[idx]||{};}
+function finaleNumOf(idx,field){
+  const raw=finaleRawOf(idx)[field];
+  if(raw===undefined||raw===null||raw==="")return null;
+  const n=parseFloat(String(raw).trim().replace(",","."));
+  return isNaN(n)?null:n;
+}
+
+// Media Voto Triennale in centesimi: media aritmetica di (1°,2°,3° anno) ×10.
+// null se anche solo uno dei tre termini manca.
+function calcMediaTriennale(idx){
+  const m1=finaleNumOf(idx,"m1"), m2=finaleNumOf(idx,"m2"), m3=media3AnnoOf(idx);
+  if(m1===null||m2===null||m3===null)return null;
+  return (m1+m2+m3)/3*10;
+}
+// Voto Finale Griglia (centesimi): 80% Media Triennale + 20% Prova Multidisciplinare.
+// null se manca la media triennale o la prova.
+// NB: nome distinto da calcVotoFinale(idx,mCols) — quella esistente è la Media
+// Ponderata/Condotta (0-10) usata da pagelle/riepiloghi; questa è specifica
+// della Griglia Finale 3F (centesimi) e non deve sovrascriverla.
+function calcVotoFinaleGriglia(idx){
+  const mt=calcMediaTriennale(idx), pr=finaleNumOf(idx,"prova");
+  if(mt===null||pr===null)return null;
+  return mt*0.8+pr*0.2;
+}
+
+// Salva un valore della Griglia Finale (solo Admin). field: "m1"|"m2"|"prova".
+async function saveFinaleValue(idx,field,rawVal){
+  if(!(App.teacher&&App.teacher.isAdmin)){toast("⛔ Solo l'Admin può modificare la Griglia Finale","err");return;}
+  const val=String(rawVal||"").trim().replace(",",".");
+  if(val!==""){
+    const n=parseFloat(val);
+    if(isNaN(n)){toast("⚠️ Valore non valido","err");return;}
+    if((field==="m1"||field==="m2")&&(n<0||n>10)){toast("⚠️ La media deve essere tra 0 e 10","err");return;}
+    if(field==="prova"&&(n<0||n>100)){toast("⚠️ La prova deve essere tra 0 e 100","err");return;}
+  }
+  if(!App.finale)App.finale={};
+  if(!App.finale[idx])App.finale[idx]={};
+  if(val===""){delete App.finale[idx][field];}else{App.finale[idx][field]=val;}
+  await fbSet("finale/"+idx+"/"+field,val===""?null:val);
+  toast("✅ Griglia Finale aggiornata","ok");
+  if(App.adminTab==="finale"&&typeof renderAdminFinale==="function")renderAdminFinale();
+}
+
 let _tt;
 function toast(msg,type="ok"){
   const t=$("#toast");t.textContent=msg;t.className="toast show t-"+type;
@@ -396,10 +454,12 @@ function startSync(){
   fbRef("subjectsLocked").on("value",snap=>{App.subjectsLocked=snap.exists()?snap.val():{};if(App.page!=="login")renderPage();});
   // Sync esiti finali AMMESSO/NON AMMESSO (Admin e Tutor)
   fbRef("esiti").on("value",snap=>{App.esiti=snap.exists()?snap.val():{};if(App.page!=="login")renderPage();});
+  // Sync Griglia Finale (solo Classe 3F, solo Admin può modificare)
+  fbRef("finale").on("value",snap=>{App.finale=snap.exists()?snap.val():{};if(App.page!=="login")renderPage();});
   // Seed una-tantum delle date di ammissione predefinite della classe attiva
   seedAmmissioniDefaults();
 }
-function stopSync(){if(DB){try{fbRef("grades").off();fbRef("dimessi").off();fbRef("corsiStudenti").off();fbRef("corsiMaterie").off();fbRef("docenteMaterie").off();fbRef("accessLog").off();fbRef("ammissioni").off();fbRef("dimissioni_date").off();fbRef("trasferiti").off();fbRef("trasferiti_date").off();fbRef("customTeachers").off();fbRef("pins").off();fbRef("condotta_parziale").off();fbRef("subjectsLocked").off();fbRef("esiti").off();}catch(e){}} App.fbL=null;}
+function stopSync(){if(DB){try{fbRef("grades").off();fbRef("dimessi").off();fbRef("corsiStudenti").off();fbRef("corsiMaterie").off();fbRef("docenteMaterie").off();fbRef("accessLog").off();fbRef("ammissioni").off();fbRef("dimissioni_date").off();fbRef("trasferiti").off();fbRef("trasferiti_date").off();fbRef("customTeachers").off();fbRef("pins").off();fbRef("condotta_parziale").off();fbRef("subjectsLocked").off();fbRef("esiti").off();fbRef("finale").off();}catch(e){}} App.fbL=null;}
 // ─── Helper Firebase con prefisso classe ────────────────────────────────────
 // Tutti i nodi Firebase classe-specifici passano per fbRef.
 // 1E: prefisso "" → nodi a radice (compatibilità totale)
@@ -444,7 +504,7 @@ function doLogout(){
   App.grades={};App.dimessi={};App.corsiStudenti={};App.corsiMaterie={};
   App.docenteMaterie={};App.customTeachers={};App.accessLog={};
   App.ammissioni={defaultDate:"",overrides:{}};App.dimissioni={};App.pins={};
-  App.trasferiti={};App.trasferiti_date={};App.condottaParziale={};App.subjectsLocked={};App.esiti={};
+  App.trasferiti={};App.trasferiti_date={};App.condottaParziale={};App.subjectsLocked={};App.esiti={};App.finale={};
   renderClassSelect();
 }
 

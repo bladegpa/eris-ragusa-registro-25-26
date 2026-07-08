@@ -228,5 +228,6 @@ const App={
   condottaParziale:{}, // {teacherId: {studentIdx: {value,ts,docente}}} — voti condotta parziali
   subjectsLocked:{},   // {sid: true} — materie bloccate (docenti non possono modificare)
   esiti:{},            // {idx: "ammesso"|"non_ammesso"} — esito finale scrutinio
+  finale:{},           // {idx: {m1,m2,prova}} — Griglia Finale (solo Classe 3F, solo Admin)
 };
 
