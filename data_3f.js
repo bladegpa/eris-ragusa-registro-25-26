@@ -100,17 +100,18 @@ const SUBJECTS_3F = [
   {id:"m12",  label:"M12 - Informatica e ICT III",                       short:"M12",   ore:30,  doc:"azzarelli",  emoji:"💻",color:"#6366F1"},
   {id:"m13",  label:"M13 - Sicurezza e Igiene III",                      short:"M13",   ore:20,  doc:"azzarelli",  emoji:"🦺",color:"#B45309"},
   {id:"m14",  label:"M14 - Orientamento III",                            short:"M14",   ore:13,  doc:"umana",      emoji:"🧭",color:"#0F766E"},
+  {id:"m15",  label:"M15 - Pianif. Fasi Lavoro III",                     short:"M15",   ore:30,  doc:"cafici",     emoji:"📋",color:"#7C3AED"},
   // ─── Comuni entrambi gli indirizzi ──────────────────────────────────────────
   {id:"m16",  label:"M16 - Accoglienza Cliente III",                     short:"M16",   ore:20,  doc:"savasta",    emoji:"👋",color:"#0F766E"},
   {id:"m17",  label:"M17 - Gest. Promozione III",                        short:"M17",   ore:15,  doc:"savasta",    emoji:"📣",color:"#6D28D9"},
   // ─── Indirizzo ACCONCIATORE ──────────────────────────────────────────────────
-  {id:"m15",  label:"M15 - Pianif. Fasi Lavoro III",                     short:"M15",   ore:30,  doc:"cafici",     emoji:"📋",color:"#7C3AED"},
   {id:"m18",  label:"M18 - Dermatologia e Tricologia III",               short:"M18",   ore:23,  doc:"savasta",    emoji:"💆",color:"#0369A1"},
   {id:"m19",  label:"M19 - Taglio e Acconciatura III",                   short:"M19",   ore:54,  doc:"savasta",    emoji:"✂", color:"#1D4ED8"},
   // ─── Indirizzo ESTETICA ──────────────────────────────────────────────────────
   {id:"m15e", label:"M15E - Pianif. Fasi Lavoro III",                    short:"M15E",  ore:30,  doc:"buetta",     emoji:"📋",color:"#DB2777"},
-  {id:"m18e", label:"M18E - Dermatologia e Trattamenti III",             short:"M18E",  ore:23,  doc:"cafici",     emoji:"💄",color:"#DB2777"},
-  {id:"m20e", label:"M20E - Anatomia e Fisiologia III",                  short:"M20E",  ore:10,  doc:"buetta",     emoji:"🫀",color:"#DC2626"},
+  {id:"m18e", label:"M18E - Elementi di Anatomia e Fisiologia III",             short:"M18E",  ore:23,  doc:"cafici",     emoji:"💄",color:"#DB2777"},
+  {id:"m19e", label:"M19E - Trattamenti Estetici III",                   short:"M19E",  ore:54,  doc:"belluardo_m",emoji:"💅",color:"#7C3AED"},
+  {id:"m20e", label:"M20E - Trattamenti estetici e Total Look III",                  short:"M20E",  ore:10,  doc:"buetta",     emoji:"🫀",color:"#DC2626"},
   {id:"m21e", label:"M21E - Trattamenti Viso Corpo III",                 short:"M21E",  ore:57,  doc:"belluardo_m",emoji:"✨",color:"#D97706"},
   {id:"m22e", label:"M22E - Total Look III",                             short:"M22E",  ore:10,  doc:"buetta",     emoji:"🧴",color:"#EC4899"},
 ];
@@ -118,7 +119,7 @@ const SUBJECTS_3F = [
 const DEFAULT_CORSO_MATERIA_3F = {
   m16:"comune", m17:"comune",
   m15:"acconciatore", m18:"acconciatore", m19:"acconciatore",
-  m15e:"estetica", m18e:"estetica", m20e:"estetica", m21e:"estetica", m22e:"estetica",
+  m15e:"estetica", m18e:"estetica", m19e:"estetica", m20e:"estetica", m21e:"estetica", m22e:"estetica",
 };
 
 const COURSE_TRACKS_3F = {
