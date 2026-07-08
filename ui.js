@@ -2143,7 +2143,7 @@ function renderAdminFinale(){
   const sts=activeStudents();
 
   el.innerHTML=`
-    <div class="info-box info-blue">🎓 <strong>Griglia Finale — Classe 3F</strong>. Media Voto Triennale = media aritmetica di 1°, 2° e 3° anno (×10, in centesimi). Voto Finale = 80% Media Triennale + 20% Prova Multidisciplinare.
+    <div class="info-box info-blue">🎓 <strong>Griglia Finale — Classe 3F</strong>. Media 3° Anno = media ponderata per ore dei moduli con voto. Media Voto Triennale = media aritmetica di 1°, 2° e 3° anno (×10, in centesimi). Voto Finale = 80% Media Triennale + 20% Prova Multidisciplinare.
     ${!isAdm?`<br><span style="color:#92400E">🔒 Sola lettura — solo l'Admin può modificare i valori.</span>`:""}</div>
     <div class="tbl-wrap"><table class="sum-tbl">
       <thead>
@@ -2151,7 +2151,7 @@ function renderAdminFinale(){
           <th class="th-name">Alunno</th>
           <th title="Media Voti 1° Anno (0-10, inserita dall'Admin)">📗<br><span style="font-size:9px;font-weight:700">Media<br>1°A</span></th>
           <th title="Media Voti 2° Anno (0-10, inserita dall'Admin)">📘<br><span style="font-size:9px;font-weight:700">Media<br>2°A</span></th>
-          <th title="Media Voti 3° Anno — calcolata automaticamente dai moduli 3F con voto, esclusa condotta">📙<br><span style="font-size:9px;font-weight:700">Media<br>3°A</span></th>
+          <th title="Media Voti 3° Anno — media PONDERATA per ore, calcolata automaticamente dai moduli 3F con voto (esclusa condotta)">📙<br><span style="font-size:9px;font-weight:700">Media<br>3°A</span></th>
           <th title="Media aritmetica di 1°+2°+3° anno, ×10 (in centesimi)">🎓<br><span style="font-size:9px;font-weight:700">Media<br>Trienn./100</span></th>
           <th title="Prova Multidisciplinare (0-100, inserita dall'Admin)">📝<br><span style="font-size:9px;font-weight:700">Prova<br>Multidisc./100</span></th>
           <th title="80% Media Triennale + 20% Prova Multidisciplinare">🏆<br><span style="font-size:9px;font-weight:700">Voto<br>Finale/100</span></th>

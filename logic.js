@@ -314,15 +314,16 @@ function calcMP(idx,cols){
 // ═══════════════════════════════════════════════
 //  GRIGLIA FINALE (solo Classe 3F, solo Admin) ─────────────────────────────
 //  Colonne: Media 1°Anno e 2°Anno (0-10, inserite dall'Admin) · Media 3°Anno
-//  (calcolata in automatico dai voti dei moduli 3F già inseriti quest'anno,
-//  esclusa condotta) · Media Triennale in centesimi (media aritmetica delle
-//  tre, ×10) · Prova Multidisciplinare (0-100, inserita dall'Admin) · Voto
-//  Finale in centesimi (80% Media Triennale + 20% Prova Multidisciplinare).
+//  (calcolata in automatico come media PONDERATA per ore dei moduli 3F già
+//  inseriti quest'anno, esclusa condotta) · Media Triennale in centesimi
+//  (media aritmetica delle tre, ×10) · Prova Multidisciplinare (0-100,
+//  inserita dall'Admin) · Voto Finale in centesimi (80% Media Triennale +
+//  20% Prova Multidisciplinare).
 // ═══════════════════════════════════════════════
 function isClasseFinale(){return CLASSE==="3F";} // classe/i abilitate alla Griglia Finale
 
-// Media 3° anno: automatica, media aritmetica dei moduli con voto (esclusa condotta)
-function media3AnnoOf(idx){return calcMedia(idx,SUBJECTS.filter(s=>!s.conductaOnly));}
+// Media 3° anno: automatica, media PONDERATA per ore (calcMP) dei moduli con voto (esclusa condotta)
+function media3AnnoOf(idx){return calcMP(idx,SUBJECTS.filter(s=>!s.conductaOnly));}
 
 // Valori grezzi inseriti dall'Admin per l'alunno (stringhe, come digitate)
 function finaleRawOf(idx){return App.finale?.[idx]||{};}
