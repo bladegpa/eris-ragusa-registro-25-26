@@ -166,9 +166,10 @@ function exportGridHtmlCols(cols){
   }catch(e){console.error(e);toast("❌ Errore: "+e.message,"err");}
 }
 
-function buildGridHtml(colsOverride){
+function buildGridHtml(colsOverride,extraCols){
   const isPartial=!!(colsOverride&&colsOverride.length>0);
   const showAmmDim=!isPartial;
+  const hasExtra=!!(extraCols&&extraCols.length&&!isPartial); // colonne extra: solo su griglia completa
   const gradeFs="8pt";
   const condFs=(parseFloat(gradeFs)*1.25)+"pt"; // font voto condotta = voti ×1,25 (10pt)
   const subjCols=(isPartial?colsOverride:SUBJECTS).filter(s=>!s.conductaOnly);
@@ -252,6 +253,7 @@ function buildGridHtml(colsOverride){
     ${showAmmDim?`<td style="border:0.4pt solid #CBD5E1"></td><td style="border:0.4pt solid #CBD5E1"></td>`:""}
     ${allCols.map(s=>`<td style="border:0.4pt solid #CBD5E1;font-size:4.5pt;color:#64748B;text-align:center;font-style:italic">${s.ore>0?s.ore:"—"}</td>`).join("")}
     ${showAmmDim?`<td style="border:0.4pt solid #CBD5E1;background:#FFFFFF"></td>`:""}
+    ${hasExtra?extraCols.map(c=>c.ore).join(""):""}
   </tr>`;
 
   // ── Student rows ──────────────────────────────────────────────────────────
@@ -288,6 +290,7 @@ function buildGridHtml(colsOverride){
       ${showAmmDim?`<td style="border:0.4pt solid #D4D8E2;font-size:4.5pt;text-align:center;color:#0F172A;font-weight:600">${ammD}</td><td style="border:0.4pt solid #D4D8E2;font-size:4.5pt;text-align:center;font-weight:700;color:${tr?"#EA580C":"#EF4444"};line-height:1.2">${dim?(dimD||"DIM."):tr?(trasD||"TRANSF."):""}</td>`:""}
       ${gradeCells}
       ${showAmmDim?`<td style="border:0.4pt solid #CBD5E1;text-align:center;font-weight:700;font-size:${condFs};color:#0F172A;background:#FFFFFF">${mpS}</td>`:""}
+      ${hasExtra?extraCols.map(c=>c.cell(i,dim,tr)).join(""):""}
     </tr>`;
   }).join("");
 
@@ -354,6 +357,7 @@ table{width:100%;border-collapse:collapse;table-layout:fixed}
   <th style="background:#0F2557;color:white;border:0.4pt solid #0F2040;padding:1mm 0.5mm;font-size:4.5pt;text-align:center;width:8mm;vertical-align:bottom">DIM.</th>`:""}
   ${thSubj}
   ${showAmmDim?`${thMA}${thMP}${thVF}`:""}
+  ${hasExtra?extraCols.map(c=>c.header).join(""):""}
 </tr>
 </thead>
 <tbody>
@@ -364,6 +368,7 @@ table{width:100%;border-collapse:collapse;table-layout:fixed}
     ${showAmmDim?`<td style="background:#0F2557;border:0.4pt solid #1E3A5F"></td><td style="background:#0F2557;border:0.4pt solid #1E3A5F"></td>`:""}
     ${teacherCells}
     ${showAmmDim?`<td style="background:#FFFFFF;border:0.4pt solid #1E3A5F"></td>`:""}
+    ${hasExtra?extraCols.map(c=>c.teacher).join(""):""}
   </tr>
 </tbody>
 </table>
@@ -418,6 +423,7 @@ ${(!isPartial?(()=>{
       ${pageCols.map(s=>`<td style="border:0.4pt solid #CBD5E1;font-size:4.5pt;color:#64748B;text-align:center;font-style:italic">${s.ore>0?s.ore:"—"}</td>`).join("")}
       ${showSummary?`
       <td style="border:0.4pt solid #CBD5E1;background:#FFFFFF"></td>`:""}
+      ${showSummary&&hasExtra?extraCols.map(c=>c.ore).join(""):""}
     </tr>`;
 
     const rowsS=rowsData.map(({st,i,dim,tr,cs,grades,ma,mp,vf},ri)=>{
@@ -448,6 +454,7 @@ ${(!isPartial?(()=>{
         <td style="border:0.4pt solid #D4D8E2;font-size:4.5pt;text-align:center;font-weight:700;color:${tr?"#EA580C":"#EF4444"};line-height:1.2">${dim?(dimD||"DIM."):tr?(trasD||"TRANSF."):""}</td>
         ${cells}
         ${summaryCells}
+        ${showSummary&&hasExtra?extraCols.map(c=>c.cell(i,dim,tr)).join(""):""}
       </tr>`;
     }).join("");
 
@@ -484,6 +491,7 @@ ${(!isPartial?(()=>{
   <th style="background:#0F2557;color:white;border:0.4pt solid #0F2040;padding:1mm 0.5mm;font-size:4.5pt;text-align:center;width:8mm;vertical-align:bottom">DIM.</th>
   ${thS}
   ${showSummary?`${thMA}${thMP}${thVF}`:""}
+  ${showSummary&&hasExtra?extraCols.map(c=>c.header).join(""):""}
 </tr>
 </thead>
 <tbody>
@@ -496,6 +504,7 @@ ${(!isPartial?(()=>{
     ${teacherS}
     ${showSummary?`
     <td style="background:#FFFFFF;border:0.4pt solid #1E3A5F"></td>`:""}
+    ${showSummary&&hasExtra?extraCols.map(c=>c.teacher).join(""):""}
   </tr>
 </tbody>
 </table>
@@ -550,6 +559,61 @@ window.addEventListener('load',function(){
 <\/script>
 </body>
 </html>`;
+}
+
+// ═══════════════════════════════════════════════
+//  GRIGLIA A4 + COLONNE GRIGLIA FINALE (solo Classe 3F) ────────────────────
+//  Riusa buildGridHtml() (griglia completa: tutte le materie + condotta +
+//  media) aggiungendo in coda le colonne di ammissione: Media 1°/2°/3° Anno,
+//  Media Triennale, Prova Multidisciplinare, Voto Finale (tutte in centesimi
+//  dove previsto). Non tocca in alcun modo la griglia standard delle altre
+//  classi: extraCols è passato SOLO da questa funzione dedicata.
+// ═══════════════════════════════════════════════
+function buildFinaleExtraCols(){
+  const hdr=(label,color)=>`<th style="background:#FFFFFF;border:0.4pt solid #0F2040;padding:0;width:7mm;height:26mm;vertical-align:bottom"><div style="writing-mode:vertical-rl;transform:rotate(180deg);display:flex;flex-direction:column;align-items:flex-start;padding:1mm 1mm 1mm 0.5mm;height:25mm"><span style="font-size:5.5pt;font-weight:800;color:${color};white-space:nowrap">${label}</span></div></th>`;
+  const oreTd=`<td style="border:0.4pt solid #CBD5E1;background:#FFFFFF"></td>`;
+  const teacherTd=`<td style="background:#FFFFFF;border:0.4pt solid #1E3A5F"></td>`;
+  const numCell=(v,dec,fs,fw)=>{
+    if(v===null||v===undefined)return`<td style="border:0.4pt solid #CBD5E1;text-align:center;color:#CBD5E1;font-size:${fs||"5.5pt"};background:#FFFFFF">—</td>`;
+    return`<td style="border:0.4pt solid #CBD5E1;text-align:center;font-weight:${fw||700};font-size:${fs||"5.5pt"};color:#0F172A;background:#FFFFFF">${dec!==undefined?v.toFixed(dec):v}</td>`;
+  };
+  const highlightCell=(v)=>{
+    if(v===null||v===undefined)return`<td style="border:0.4pt solid #CBD5E1;text-align:center;color:#CBD5E1;font-size:6pt;background:#FFFFFF">—</td>`;
+    return`<td style="border:0.9pt solid ${gradeColorCento(v)};text-align:center;font-weight:900;font-size:7.5pt;color:${gradeColorCento(v)};background:${gradeBgCento(v)}">${v}</td>`;
+  };
+  const inactiveCell=`<td style="border:0.4pt solid #CBD5E1;text-align:center;color:#CBD5E1;font-size:5.5pt;background:#FFFFFF">—</td>`;
+
+  return[
+    {header:hdr("Media 1°A","#1D4ED8"),ore:oreTd,teacher:teacherTd,
+      cell:(i,dim,tr)=>(dim||tr)?inactiveCell:numCell(finaleNumOf(i,"m1"),1)},
+    {header:hdr("Media 2°A","#1D4ED8"),ore:oreTd,teacher:teacherTd,
+      cell:(i,dim,tr)=>(dim||tr)?inactiveCell:numCell(finaleNumOf(i,"m2"),1)},
+    {header:hdr("Media 3°A (Pond.)","#1D4ED8"),ore:oreTd,teacher:teacherTd,
+      cell:(i,dim,tr)=>(dim||tr)?inactiveCell:numCell(media3AnnoOf(i),1)},
+    {header:hdr("Media Triennale /100","#92400E"),ore:oreTd,teacher:teacherTd,
+      cell:(i,dim,tr)=>(dim||tr)?inactiveCell:numCell(calcMediaTriennale(i),undefined,"6pt",800)},
+    {header:hdr("Prova Multidisc. /100","#7C3AED"),ore:oreTd,teacher:teacherTd,
+      cell:(i,dim,tr)=>(dim||tr)?inactiveCell:numCell(finaleNumOf(i,"prova"),2)},
+    {header:hdr("Voto Finale /100","#BE185D"),ore:oreTd,teacher:teacherTd,
+      cell:(i,dim,tr)=>(dim||tr)?inactiveCell:highlightCell(calcVotoFinaleGriglia(i))},
+  ];
+}
+
+function exportGridFinaleAmmissioneHtml(){
+  if(!isClasseFinale()){toast("⚠️ Disponibile solo per la Classe 3F","err");return;}
+  toast("⏳ Generazione griglia in corso...","info");
+  try{
+    const html=buildGridHtml(undefined,buildFinaleExtraCols());
+    const blob=new Blob([html],{type:"text/html;charset=utf-8"});
+    const url=URL.createObjectURL(blob);
+    const win=window.open(url,"_blank");
+    if(!win){
+      downloadBlob(blob,"Griglia_Finale_Ammissione_"+CLASSE+"_"+ANNO.replace("/","-")+".html");
+      toast("📥 File scaricato — aprilo nel browser per stampare","info");
+    }else{
+      setTimeout(()=>URL.revokeObjectURL(url),8000);
+    }
+  }catch(e){console.error(e);toast("❌ Errore: "+e.message,"err");}
 }
 
 // ═══════════════════════════════════════════════
@@ -2146,6 +2210,7 @@ function renderAdminFinale(){
     <div class="info-box info-blue">🎓 <strong>Griglia Finale — Classe 3F</strong>. Media 3° Anno = media ponderata per ore dei moduli con voto. Media Voto Triennale = media aritmetica di 1°, 2° e 3° anno (×10, in centesimi, senza decimali). Voto Finale = 80% Media Triennale + 20% Prova Multidisciplinare.
     ${!isAdm?`<br><span style="color:#92400E">🔒 Sola lettura — solo l'Admin può modificare i valori.</span>`:""}</div>
     <button class="btn-print-grid" id="btn-stampa-finale" style="background:linear-gradient(135deg,#9D174D,#BE185D)"><span style="font-size:22px">🖨️</span><div><div class="btn-lbl-big">Stampa Griglia Finale</div><div class="btn-lbl-small">HTML pronto per la stampa · tutte le colonne · Classe 3F</div></div></button>
+    <button class="btn-print-grid" id="btn-stampa-finale-a4" style="background:linear-gradient(135deg,#1B3F8B,#0F2557)"><span style="font-size:22px">📊</span><div><div class="btn-lbl-big">Stampa Griglia A4 + Ammissione</div><div class="btn-lbl-small">Griglia completa (materie, condotta, media) + colonne Griglia Finale</div></div></button>
     <div class="tbl-wrap"><table class="sum-tbl">
       <thead>
         <tr>
@@ -2197,4 +2262,5 @@ function renderAdminFinale(){
     });
   }
   const bsf=$("#btn-stampa-finale");if(bsf)bsf.addEventListener("click",exportGrigliaFinaleHtml);
+  const bsfa=$("#btn-stampa-finale-a4");if(bsfa)bsfa.addEventListener("click",exportGridFinaleAmmissioneHtml);
 }
