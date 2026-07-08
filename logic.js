@@ -334,22 +334,23 @@ function finaleNumOf(idx,field){
   return isNaN(n)?null:n;
 }
 
-// Media Voto Triennale in centesimi: media aritmetica di (1°,2°,3° anno) ×10.
+// Media Voto Triennale in centesimi: media aritmetica di (1°,2°,3° anno) ×10,
+// ARROTONDATA all'intero (centesimi senza decimali).
 // null se anche solo uno dei tre termini manca.
 function calcMediaTriennale(idx){
   const m1=finaleNumOf(idx,"m1"), m2=finaleNumOf(idx,"m2"), m3=media3AnnoOf(idx);
   if(m1===null||m2===null||m3===null)return null;
-  return (m1+m2+m3)/3*10;
+  return Math.round((m1+m2+m3)/3*10);
 }
-// Voto Finale Griglia (centesimi): 80% Media Triennale + 20% Prova Multidisciplinare.
-// null se manca la media triennale o la prova.
+// Voto Finale Griglia (centesimi, ARROTONDATO all'intero): 80% Media
+// Triennale + 20% Prova Multidisciplinare. null se manca un termine.
 // NB: nome distinto da calcVotoFinale(idx,mCols) — quella esistente è la Media
 // Ponderata/Condotta (0-10) usata da pagelle/riepiloghi; questa è specifica
 // della Griglia Finale 3F (centesimi) e non deve sovrascriverla.
 function calcVotoFinaleGriglia(idx){
   const mt=calcMediaTriennale(idx), pr=finaleNumOf(idx,"prova");
   if(mt===null||pr===null)return null;
-  return mt*0.8+pr*0.2;
+  return Math.round(mt*0.8+pr*0.2);
 }
 
 // Salva un valore della Griglia Finale (solo Admin). field: "m1"|"m2"|"prova".

@@ -1799,3 +1799,147 @@ async function exportClassProfsSchede(){
   }catch(e){console.error(e);toast("❌ Errore: "+e.message,"err");}
   finally{hideProgress();startSync();}
 }
+
+// ═══════════════════════════════════════════════
+//  STAMPA GRIGLIA FINALE (solo Classe 3F) ───────────────────────────────────
+// ═══════════════════════════════════════════════
+function buildGrigliaFinaleHtml(){
+  const sts=activeStudents();
+  const cC=v=>v===null||v===undefined?"#64748B":(v<6?"#DC2626":v<7?"#B45309":v<9?"#D97706":"#059669");
+  const cCC=v=>v===null||v===undefined?"#64748B":(v<60?"#DC2626":v<70?"#B45309":v<90?"#D97706":"#059669");
+  const cBgC=v=>v===null||v===undefined?"#F8FAFC":(v<60?"#FEF2F2":v<70?"#FEFCE8":v<90?"#FFFBEB":"#ECFDF5");
+
+  let tableRows="";
+  sts.forEach((st,idx)=>{
+    const i=STUDENTS.indexOf(st);
+    const raw=finaleRawOf(i);
+    const m1=finaleNumOf(i,"m1"), m2=finaleNumOf(i,"m2");
+    const m3=media3AnnoOf(i);
+    const mt=calcMediaTriennale(i);
+    const pr=finaleNumOf(i,"prova");
+    const vf=calcVotoFinaleGriglia(i);
+    const bg=idx%2===0?"#FFFFFF":"#F8FAFC";
+    tableRows+=`<tr style="background:${bg}">
+<td class="rc">${st.num}</td>
+<td class="rn">${fmtName(st.name)}</td>
+<td class="rv" style="color:${cC(m1)};font-weight:700">${m1!==null?m1.toFixed(1):"—"}</td>
+<td class="rv" style="color:${cC(m2)};font-weight:700">${m2!==null?m2.toFixed(1):"—"}</td>
+<td class="rv" style="color:${cC(m3)};font-weight:700">${m3!==null?m3.toFixed(1):"—"}</td>
+<td class="rv" style="background:${cBgC(mt)};color:${cCC(mt)};font-weight:800">${mt!==null?mt:"—"}</td>
+<td class="rv" style="color:${cCC(pr)};font-weight:700">${pr!==null?pr.toFixed(2):"—"}</td>
+<td class="rv" style="background:${cBgC(vf)};color:${cCC(vf)};font-weight:900;font-size:15pt;border:1.5px solid ${cCC(vf)}">${vf!==null?vf:"—"}</td>
+</tr>\n`;
+  });
+
+  return`<!DOCTYPE html>
+<html lang="it">
+<head>
+<meta charset="UTF-8">
+<title>Griglia Finale \u2014 Classe ${CLASSE}</title>
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+html,body{font-family:Arial,sans-serif;color:#000;background:#ccc}
+@page{size:A4 landscape;margin:0}
+@media print{
+  html,body{background:white}
+  .noprint{display:none!important}
+  .pg{page-break-after:always;page-break-inside:avoid}
+  .pg:last-child{page-break-after:avoid}
+}
+.bar{background:#1B3F8B;color:white;padding:10px 18px;display:flex;align-items:center;
+  justify-content:space-between;position:sticky;top:0;z-index:100}
+.bar h1{font-size:13px;font-weight:700}
+.bar p{font-size:10px;opacity:.8;margin-top:2px}
+.btnp{background:#059669;color:white;border:none;border-radius:6px;padding:8px 16px;
+  font-size:12px;font-weight:700;cursor:pointer}
+.pg{
+  width:297mm;min-height:210mm;
+  background:white;
+  display:flex;flex-direction:column;
+  overflow:hidden;
+  margin:14px auto;
+  box-shadow:0 2px 10px rgba(0,0,0,.3);
+}
+@media print{.pg{margin:0;box-shadow:none;min-height:210mm}}
+.ph{
+  flex:0 0 26mm;
+  border-bottom:2pt solid #003087;
+  padding:3mm 8mm 2mm;
+  display:flex;align-items:center;
+}
+.ph img{width:100%;height:100%;object-fit:contain;object-position:left center}
+.pb{
+  flex:1 1 0;
+  overflow:hidden;
+  padding:4mm 12mm 3mm;
+}
+.pf{
+  flex:0 0 20mm;
+  border-top:2pt solid #003087;
+  padding:2mm 8mm;
+  display:flex;align-items:center;gap:8px;
+}
+.fi{height:14mm;width:auto;flex-shrink:0}
+.ft{flex:1;text-align:center;font-size:7.5pt;line-height:1.5;color:#111}
+.ft b{display:block;font-size:7.5pt;margin-bottom:1px}
+.h1c{text-align:center;font-weight:700;font-size:11pt;margin:0 0 2px}
+.h2c{text-align:center;font-size:11pt;line-height:1.3;margin:0 0 2px}
+.titolo{text-align:center;font-size:13pt;font-weight:700;text-decoration:underline;margin:4px 0 8px}
+.rt{width:100%;border-collapse:collapse;margin-top:6px}
+.rt th{background:#1B3F8B;color:white;font-size:9pt;font-weight:700;padding:5px 4px;
+  border:1px solid #94A3B8;text-align:center;line-height:1.2}
+.rt th.thl{text-align:left}
+.rc{text-align:center;padding:4px 5px;border:1px solid #CBD5E1;font-size:9pt;width:5%;font-weight:600;color:#475569}
+.rn{padding:4px 8px;border:1px solid #CBD5E1;font-size:9.5pt;font-weight:600;width:24%}
+.rv{text-align:center;padding:4px 5px;border:1px solid #CBD5E1;font-size:10.5pt}
+.firme{display:flex;justify-content:space-between;margin-top:12px;font-size:10pt}
+.legenda{margin-top:8px;font-size:8pt;color:#475569;line-height:1.5}
+</style>
+</head>
+<body>
+<div class="bar noprint">
+  <div><h1>&#127891; Griglia Finale &mdash; Classe ${CLASSE}</h1>
+  <p>${sts.length} alunni &middot; A.S. ${ANNO}</p></div>
+  <button class="btnp" onclick="window.print()">&#128438;&nbsp;Stampa / Salva PDF</button>
+</div>
+<div class="pg">
+<div class="ph"><img src="${IMG_ASSET_0}" alt="ERIS intestazione logos"></div>
+<div class="pb">
+<p class="h1c">ASSOCIAZIONE ERIS DI RAGUSA &ndash; IEFP &ndash; ANNO ${ANNO}</p>
+<p class="h2c">Corso: ${COURSE_TRACKS.courseLabel} &nbsp;&nbsp; ${CLASSE} &nbsp;&nbsp; ${COURSE_TRACKS.courseCode}</p>
+<p class="titolo">GRIGLIA FINALE &mdash; MEDIA VOTO TRIENNALE E PROVA MULTIDISCIPLINARE</p>
+<table class="rt">
+<thead><tr>
+<th>N.</th><th class="thl">Cognome e Nome</th>
+<th>Media<br>1&deg; Anno</th><th>Media<br>2&deg; Anno</th><th>Media<br>3&deg; Anno<br>(Pond.)</th>
+<th>Media<br>Triennale<br>/100</th><th>Prova<br>Multidisc.<br>/100</th><th>Voto<br>Finale<br>/100</th>
+</tr></thead>
+<tbody>
+${tableRows}</tbody>
+</table>
+<p class="legenda">Media 3&deg; Anno: media ponderata per ore dei moduli con voto inseriti quest'anno (esclusa condotta). Media Triennale: media aritmetica di 1&deg;+2&deg;+3&deg; anno &times;10, in centesimi senza decimali. Voto Finale: 80% Media Triennale + 20% Prova Multidisciplinare.</p>
+<div class="firme"><span><strong>Data</strong>: _______________</span><span><strong>FIRMA COORDINATORE</strong>: ___________________________</span></div>
+</div>
+<div class="pf"><img class="fi" src="${IMG_ASSET_1}" alt="ISO 9001"><div class="ft"><b>ERIS ENTE DEL TERZO SETTORE</b>Sede legale: via Salvatore Paola, 14/a &ndash; 95125 Catania | tel./fax: 095433940 | didattica.ct@erisformazione.it | amministrazione.ct@erisformazione.it<br>Associazione riconosciuta, iscrizione n&deg;&nbsp;293979 C.C.I.A.A. di Catania | CF: 97180200822 | info@pec.erisformazione.it | www.erisformazione.it</div><img class="fi" src="${IMG_ASSET_2}" alt="OHSAS 18001"></div>
+</div>
+<script>window.addEventListener('load',()=>setTimeout(()=>window.print(),900));<\/script>
+</body>
+</html>`;
+}
+
+function exportGrigliaFinaleHtml(){
+  if(!isClasseFinale()){toast("⚠️ La Griglia Finale è disponibile solo per la Classe 3F","err");return;}
+  toast("⏳ Generazione Griglia Finale in corso...","info");
+  try{
+    const html=buildGrigliaFinaleHtml();
+    const blob=new Blob([html],{type:"text/html;charset=utf-8"});
+    const url=URL.createObjectURL(blob);
+    const win=window.open(url,"_blank");
+    if(!win){
+      downloadBlob(blob,"Griglia_Finale_"+CLASSE+"_"+ANNO.replace("/","-")+".html");
+      toast("📥 File scaricato — aprilo nel browser per stampare","info");
+    }else{
+      setTimeout(()=>URL.revokeObjectURL(url),8000);
+    }
+  }catch(e){console.error(e);toast("❌ Errore: "+e.message,"err");}
+}

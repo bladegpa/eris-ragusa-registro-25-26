@@ -2143,8 +2143,9 @@ function renderAdminFinale(){
   const sts=activeStudents();
 
   el.innerHTML=`
-    <div class="info-box info-blue">🎓 <strong>Griglia Finale — Classe 3F</strong>. Media 3° Anno = media ponderata per ore dei moduli con voto. Media Voto Triennale = media aritmetica di 1°, 2° e 3° anno (×10, in centesimi). Voto Finale = 80% Media Triennale + 20% Prova Multidisciplinare.
+    <div class="info-box info-blue">🎓 <strong>Griglia Finale — Classe 3F</strong>. Media 3° Anno = media ponderata per ore dei moduli con voto. Media Voto Triennale = media aritmetica di 1°, 2° e 3° anno (×10, in centesimi, senza decimali). Voto Finale = 80% Media Triennale + 20% Prova Multidisciplinare.
     ${!isAdm?`<br><span style="color:#92400E">🔒 Sola lettura — solo l'Admin può modificare i valori.</span>`:""}</div>
+    <button class="btn-print-grid" id="btn-stampa-finale" style="background:linear-gradient(135deg,#9D174D,#BE185D)"><span style="font-size:22px">🖨️</span><div><div class="btn-lbl-big">Stampa Griglia Finale</div><div class="btn-lbl-small">HTML pronto per la stampa · tutte le colonne · Classe 3F</div></div></button>
     <div class="tbl-wrap"><table class="sum-tbl">
       <thead>
         <tr>
@@ -2168,8 +2169,8 @@ function renderAdminFinale(){
           const vf=calcVotoFinaleGriglia(i);
           const m3S=m3!==null?m3.toFixed(1):"—";
           const m3C=m3!==null?gradeColor(m3):"#CBD5E1";
-          const mtS=mt!==null?mt.toFixed(2):"—";
-          const vfS=vf!==null?vf.toFixed(2):"—";
+          const mtS=mt!==null?String(mt):"—";
+          const vfS=vf!==null?String(vf):"—";
           const inp=(field,val,ph)=>isAdm
             ?`<input type="text" inputmode="decimal" class="finale-inp" data-finale-i="${i}" data-finale-f="${field}" value="${val}" placeholder="${ph}" style="width:52px;text-align:center;border:1.5px solid #E2E8F0;border-radius:7px;padding:5px 3px;font-size:12px;font-weight:700">`
             :`<span style="font-weight:700;color:${val?"#0F172A":"#CBD5E1"}">${val||"—"}</span>`;
@@ -2195,4 +2196,5 @@ function renderAdminFinale(){
       });
     });
   }
+  const bsf=$("#btn-stampa-finale");if(bsf)bsf.addEventListener("click",exportGrigliaFinaleHtml);
 }
