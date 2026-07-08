@@ -112,13 +112,12 @@ const SUBJECTS_3F = [
   {id:"m19e", label:"M19E - Trattamenti Estetici III",                   short:"M19E",  ore:54,  doc:"belluardo_m",emoji:"💅",color:"#7C3AED"},
   {id:"m20e", label:"M20E - Trattamenti estetici e Total Look III",                  short:"M20E",  ore:10,  doc:"buetta",     emoji:"🫀",color:"#DC2626"},
   {id:"m21e", label:"M21E - Trattamenti Viso Corpo III",                 short:"M21E",  ore:57,  doc:"belluardo_m",emoji:"✨",color:"#D97706"},
-  {id:"m22e", label:"M22E - Total Look III",                             short:"M22E",  ore:10,  doc:"buetta",     emoji:"🧴",color:"#EC4899"},
 ];
 
 const DEFAULT_CORSO_MATERIA_3F = {
   m16:"comune", m17:"comune", m15:"comune",
   m18:"acconciatore", m19:"acconciatore",
-  m18e:"estetica", m19e:"estetica", m20e:"estetica", m21e:"estetica", m22e:"estetica",
+  m18e:"estetica", m19e:"estetica", m20e:"estetica", m21e:"estetica",
 };
 
 const COURSE_TRACKS_3F = {
