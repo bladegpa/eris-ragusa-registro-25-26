@@ -582,6 +582,8 @@ function buildFinaleExtraCols(){
     return`<td style="border:0.9pt solid ${gradeColorCento(v)};text-align:center;font-weight:900;font-size:7.5pt;color:${gradeColorCento(v)};background:${gradeBgCento(v)}">${v}</td>`;
   };
   const inactiveCell=`<td style="border:0.4pt solid #CBD5E1;text-align:center;color:#CBD5E1;font-size:5.5pt;background:#FFFFFF">—</td>`;
+  // Cella "N.A." (NON AMMESSO) per il Voto Finale
+  const naCell=`<td style="border:0.9pt solid #DC2626;text-align:center;font-weight:900;font-size:7.5pt;color:#DC2626;background:#FEF2F2">N.A.</td>`;
 
   return[
     {header:hdr("Media 1°A","#1D4ED8"),ore:oreTd,teacher:teacherTd,
@@ -595,7 +597,7 @@ function buildFinaleExtraCols(){
     {header:hdr("Prova Multidisc. /100","#7C3AED"),ore:oreTd,teacher:teacherTd,
       cell:(i,dim,tr)=>(dim||tr)?inactiveCell:numCell(finaleNumOf(i,"prova"),2)},
     {header:hdr("Voto Finale /100","#BE185D"),ore:oreTd,teacher:teacherTd,
-      cell:(i,dim,tr)=>(dim||tr)?inactiveCell:highlightCell(calcVotoFinaleGriglia(i))},
+      cell:(i,dim,tr)=>(dim||tr)?inactiveCell:(esitoOf(i)==="non_ammesso"?naCell:highlightCell(calcVotoFinaleGriglia(i)))},
   ];
 }
 
@@ -2208,7 +2210,8 @@ function renderAdminFinale(){
 
   el.innerHTML=`
     <div class="info-box info-blue">🎓 <strong>Griglia Finale — Classe 3F</strong>. Media 3° Anno = media ponderata per ore dei moduli con voto. Media Voto Triennale = media aritmetica di 1°, 2° e 3° anno (×10, in centesimi, senza decimali). Voto Finale = 80% Media Triennale + 20% Prova Multidisciplinare.
-    ${!isAdm?`<br><span style="color:#92400E">🔒 Sola lettura — solo l'Admin può modificare i valori.</span>`:""}</div>
+    ${!isAdm?`<br><span style="color:#92400E">🔒 Sola lettura — solo l'Admin può modificare i valori.</span>`:""}
+    <br><span style="color:#DC2626;font-weight:700">N.A. = NON AMMESSO</span> — se un alunno è impostato su NON AMMESSO, il Voto Finale mostra <strong style="color:#DC2626">N.A.</strong></div>
     <button class="btn-print-grid" id="btn-stampa-finale" style="background:linear-gradient(135deg,#9D174D,#BE185D)"><span style="font-size:22px">🖨️</span><div><div class="btn-lbl-big">Stampa Griglia Finale</div><div class="btn-lbl-small">HTML pronto per la stampa · tutte le colonne · Classe 3F</div></div></button>
     <button class="btn-print-grid" id="btn-stampa-finale-a4" style="background:linear-gradient(135deg,#1B3F8B,#0F2557)"><span style="font-size:22px">📊</span><div><div class="btn-lbl-big">Stampa Griglia A4 + Ammissione</div><div class="btn-lbl-small">Griglia completa (materie, condotta, media) + colonne Griglia Finale</div></div></button>
     <div class="tbl-wrap"><table class="sum-tbl">
@@ -2221,6 +2224,7 @@ function renderAdminFinale(){
           <th title="Media aritmetica di 1°+2°+3° anno, ×10 (in centesimi)">🎓<br><span style="font-size:9px;font-weight:700">Media<br>Trienn./100</span></th>
           <th title="Prova Multidisciplinare (0-100, inserita dall'Admin)">📝<br><span style="font-size:9px;font-weight:700">Prova<br>Multidisc./100</span></th>
           <th title="80% Media Triennale + 20% Prova Multidisciplinare">🏆<br><span style="font-size:9px;font-weight:700">Voto<br>Finale/100</span></th>
+          ${isAdm?`<th title="Esito finale scrutinio">🎯<br><span style="font-size:9px;font-weight:700">Esito</span></th>`:""}
         </tr>
       </thead>
       <tbody>
@@ -2232,6 +2236,8 @@ function renderAdminFinale(){
           const mt=calcMediaTriennale(i);
           const prova=raw.prova||"";
           const vf=calcVotoFinaleGriglia(i);
+          const es=esitoOf(i);
+          const nonAmm=es==="non_ammesso";
           const m3S=m3!==null?m3.toFixed(1):"—";
           const m3C=m3!==null?gradeColor(m3):"#CBD5E1";
           const mtS=mt!==null?String(mt):"—";
@@ -2239,6 +2245,12 @@ function renderAdminFinale(){
           const inp=(field,val,ph)=>isAdm
             ?`<input type="text" inputmode="decimal" class="finale-inp" data-finale-i="${i}" data-finale-f="${field}" value="${val}" placeholder="${ph}" style="width:52px;text-align:center;border:1.5px solid #E2E8F0;border-radius:7px;padding:5px 3px;font-size:12px;font-weight:700">`
             :`<span style="font-weight:700;color:${val?"#0F172A":"#CBD5E1"}">${val||"—"}</span>`;
+          const vfCell=nonAmm
+            ?`<td class="td-vf" style="color:#DC2626;background:#FEF2F2;font-weight:900">N.A.</td>`
+            :`<td class="td-vf" style="color:${gradeColorCento(vf)};background:${gradeBgCento(vf)}">${vfS}</td>`;
+          const esitoCell=isAdm
+            ?`<td style="text-align:center"><button class="btn-esito-finale" data-esito-fin="${i}" style="height:26px;padding:0 8px;border-radius:7px;border:1.5px solid ${nonAmm?"#DC2626":"#059669"};background:${nonAmm?"#FEF2F2":"#F0FDF4"};color:${nonAmm?"#DC2626":"#059669"};font-size:10px;font-weight:800;cursor:pointer;white-space:nowrap">${nonAmm?"⛔ NON AMMESSO":"✅ AMMESSO"}</button></td>`
+            :"";
           return`<tr>
             <td class="td-name">${fmtName(st.name)}</td>
             <td style="text-align:center">${inp("m1",m1,"0-10")}</td>
@@ -2246,7 +2258,8 @@ function renderAdminFinale(){
             <td class="td-ma" style="color:${m3C}">${m3S}</td>
             <td class="td-mp" style="color:${gradeColorCento(mt)};background:${gradeBgCento(mt)}">${mtS}</td>
             <td style="text-align:center">${inp("prova",prova,"0-100")}</td>
-            <td class="td-vf" style="color:${gradeColorCento(vf)};background:${gradeBgCento(vf)}">${vfS}</td>
+            ${vfCell}
+            ${esitoCell}
           </tr>`;
         }).join("")}
       </tbody>
@@ -2259,6 +2272,9 @@ function renderAdminFinale(){
         const i=parseInt(this.dataset.finaleI),field=this.dataset.finaleF;
         saveFinaleValue(i,field,this.value).then(()=>renderAdminFinale());
       });
+    });
+    $$(".btn-esito-finale[data-esito-fin]").forEach(btn=>{
+      btn.addEventListener("click",function(){toggleEsito(parseInt(this.dataset.esitoFin));});
     });
   }
   const bsf=$("#btn-stampa-finale");if(bsf)bsf.addEventListener("click",exportGrigliaFinaleHtml);

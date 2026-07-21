@@ -1047,9 +1047,11 @@ async function buildDocxPagella(st,idx){
           <w:p><w:pPr><w:spacing w:line="360" w:lineRule="auto"/><w:jc w:val="center"/></w:pPr><w:r><w:rPr><w:b/><w:rFonts w:asciiTheme="minorHAnsi" w:hAnsiTheme="minorHAnsi"/></w:rPr><w:t>CHE</w:t></w:r></w:p>
           <w:p><w:pPr><w:spacing w:line="480" w:lineRule="auto"/><w:jc w:val="center"/></w:pPr><w:r><w:rPr><w:rFonts w:asciiTheme="minorHAnsi" w:hAnsiTheme="minorHAnsi"/></w:rPr><w:t xml:space="preserve">L&#x2019;allievo </w:t></w:r></w:p>
           <w:p><w:pPr><w:spacing w:line="480" w:lineRule="auto"/><w:jc w:val="center"/></w:pPr><w:r><w:rPr><w:b/><w:rFonts w:asciiTheme="minorHAnsi" w:hAnsiTheme="minorHAnsi"/></w:rPr><w:t>{{ALUNNO}}</w:t></w:r></w:p>
-          <w:p><w:pPr><w:spacing w:line="480" w:lineRule="auto"/><w:jc w:val="center"/></w:pPr><w:r><w:rPr><w:rFonts w:asciiTheme="minorHAnsi" w:hAnsiTheme="minorHAnsi"/></w:rPr><w:t xml:space="preserve">${esito==="non_ammesso"?"non &#xe8; stato ":"&#xe8; stato "}</w:t></w:r><w:r><w:rPr><w:b/><w:u w:val="single"/><w:rFonts w:asciiTheme="minorHAnsi" w:hAnsiTheme="minorHAnsi"/></w:rPr><w:t>AMMESSO</w:t></w:r><w:r><w:rPr><w:rFonts w:asciiTheme="minorHAnsi" w:hAnsiTheme="minorHAnsi"/></w:rPr><w:t xml:space="preserve"> alla </w:t></w:r></w:p>
+          ${esito==="non_ammesso"?`<w:p><w:pPr><w:spacing w:line="480" w:lineRule="auto"/><w:jc w:val="center"/></w:pPr><w:r><w:rPr><w:rFonts w:asciiTheme="minorHAnsi" w:hAnsiTheme="minorHAnsi"/></w:rPr><w:t xml:space="preserve">non &#xe8; stato ammesso alla </w:t></w:r></w:p>
+          <w:p><w:pPr><w:spacing w:line="480" w:lineRule="auto"/><w:jc w:val="center"/></w:pPr><w:r><w:rPr><w:b/><w:rFonts w:asciiTheme="minorHAnsi" w:hAnsiTheme="minorHAnsi"/></w:rPr><w:t xml:space="preserve">{{ANNUALITA}}</w:t></w:r></w:p>
+          <w:p><w:pPr><w:spacing w:line="480" w:lineRule="auto"/><w:jc w:val="center"/></w:pPr><w:r><w:rPr><w:b/><w:sz w:val="28"/><w:szCs w:val="28"/><w:color w:val="DC2626"/><w:rFonts w:asciiTheme="minorHAnsi" w:hAnsiTheme="minorHAnsi"/></w:rPr><w:t>NON AMMESSO</w:t></w:r></w:p>`:`<w:p><w:pPr><w:spacing w:line="480" w:lineRule="auto"/><w:jc w:val="center"/></w:pPr><w:r><w:rPr><w:rFonts w:asciiTheme="minorHAnsi" w:hAnsiTheme="minorHAnsi"/></w:rPr><w:t xml:space="preserve">&#xe8; stato </w:t></w:r><w:r><w:rPr><w:b/><w:u w:val="single"/><w:rFonts w:asciiTheme="minorHAnsi" w:hAnsiTheme="minorHAnsi"/></w:rPr><w:t>AMMESSO</w:t></w:r><w:r><w:rPr><w:rFonts w:asciiTheme="minorHAnsi" w:hAnsiTheme="minorHAnsi"/></w:rPr><w:t xml:space="preserve"> alla </w:t></w:r></w:p>
           <w:p><w:pPr><w:spacing w:line="480" w:lineRule="auto"/><w:jc w:val="center"/></w:pPr><w:r><w:rPr><w:b/><w:rFonts w:asciiTheme="minorHAnsi" w:hAnsiTheme="minorHAnsi"/></w:rPr><w:t xml:space="preserve">{{ANNUALITA}} con il seguente giudizio finale:</w:t></w:r></w:p>
-          <w:p><w:pPr><w:spacing w:line="480" w:lineRule="auto"/><w:jc w:val="center"/></w:pPr><w:r><w:rPr><w:b/><w:sz w:val="28"/><w:szCs w:val="28"/><w:rFonts w:asciiTheme="minorHAnsi" w:hAnsiTheme="minorHAnsi"/></w:rPr><w:t>{{VALUTAZIONE MEDIA PONDERATA}}</w:t></w:r></w:p>
+          <w:p><w:pPr><w:spacing w:line="480" w:lineRule="auto"/><w:jc w:val="center"/></w:pPr><w:r><w:rPr><w:b/><w:sz w:val="28"/><w:szCs w:val="28"/><w:rFonts w:asciiTheme="minorHAnsi" w:hAnsiTheme="minorHAnsi"/></w:rPr><w:t>{{VALUTAZIONE MEDIA PONDERATA}}</w:t></w:r></w:p>`}
           <w:p><w:pPr><w:spacing w:line="276" w:lineRule="auto"/><w:jc w:val="center"/></w:pPr><w:r><w:rPr><w:i/><w:rFonts w:asciiTheme="minorHAnsi" w:hAnsiTheme="minorHAnsi"/></w:rPr><w:t>Condotta:</w:t></w:r></w:p>
           <w:p><w:pPr><w:spacing w:line="276" w:lineRule="auto"/><w:jc w:val="center"/></w:pPr><w:r><w:rPr><w:b/><w:sz w:val="28"/><w:szCs w:val="28"/><w:rFonts w:asciiTheme="minorHAnsi" w:hAnsiTheme="minorHAnsi"/></w:rPr><w:t>{{VOTO CONDOTTA}}</w:t></w:r></w:p>
           <w:p><w:pPr><w:spacing w:line="480" w:lineRule="auto"/><w:jc w:val="center"/></w:pPr></w:p>
@@ -1208,12 +1210,22 @@ function buildHtmlPagella(st,idx){
       <div style="font-size:11pt;font-weight:900;color:${tr?"#C2410C":"#DC2626"}">${alunno}</div>
       <div style="font-size:14pt;font-weight:900;color:${tr?"#EA580C":"#EF4444"};letter-spacing:1px">${tr?"TRASFERITO":"DIMESSO"}</div>
       ${(tr?trasData:dimData)?`<div style="font-size:9pt;color:#64748B">in data <strong>${tr?trasData:dimData}</strong></div>`:""}
+    </div>`:(esito==="non_ammesso"?`
+    <div style="flex:1;border:1.5pt solid #FECACA;padding:10px 12px;text-align:center;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:6px;background:#FFF5F5;align-self:stretch">
+      <div style="font-size:10pt;font-weight:800;letter-spacing:1px">SI ATTESTA CHE</div>
+      <div style="font-size:9pt">L&apos;allievo</div>
+      <div style="font-size:11pt;font-weight:900;color:#0F2557">${alunno}</div>
+      <div style="font-size:9pt">non &egrave; stato ammesso alla</div>
+      <div style="font-size:10pt;font-weight:800">${annoLabel}</div>
+      <div style="font-size:22pt;font-weight:900;color:#DC2626;letter-spacing:1.5px;margin:6px 0">NON AMMESSO</div>
+      <div style="font-size:8pt;color:#64748B;margin-top:2px">Voto di condotta:</div>
+      <div style="font-size:16pt;font-weight:900;color:${gradeColor(votoCond)}">${votoCond}</div>
     </div>`:`
     <div style="flex:1;border:1pt solid #CBD5E1;padding:10px 12px;text-align:center;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:6px;background:#FAFAFA;align-self:stretch">
       <div style="font-size:10pt;font-weight:800;letter-spacing:1px">SI ATTESTA CHE</div>
       <div style="font-size:9pt">L&apos;allievo</div>
       <div style="font-size:11pt;font-weight:900;color:#0F2557">${alunno}</div>
-      <div style="font-size:9pt">${esito==="non_ammesso"?`<strong style="color:#DC2626">non</strong> è stato <strong><u>AMMESSO</u></strong>`:`è stato <strong><u>AMMESSO</u></strong>`} alla</div>
+      <div style="font-size:9pt">&egrave; stato <strong><u>AMMESSO</u></strong> alla</div>
       <div style="font-size:10pt;font-weight:800">${annoLabel}</div>
       <div style="font-size:8pt">con il seguente giudizio finale:</div>
       <div style="font-size:18pt;font-weight:900;color:${giudizioColor(giudizio)};margin:4px 0">${giudizio}</div>
@@ -1222,7 +1234,7 @@ function buildHtmlPagella(st,idx){
       <hr style="width:80%;border:none;border-top:1px solid #CBD5E1;margin:4px 0">
       <div style="font-size:8pt;color:#64748B">Votazione finale:</div>
       <div style="font-size:20pt;font-weight:900;color:${mpColor}">${mpx10!==null?mpx10+" / 100":"—"}</div>
-    </div>`;
+    </div>`);
 
   const righeHtml=subjCols.map(s=>{
     const e=App.grades[s.id]?.[idx];
@@ -1818,7 +1830,11 @@ function buildGrigliaFinaleHtml(){
     const mt=calcMediaTriennale(i);
     const pr=finaleNumOf(i,"prova");
     const vf=calcVotoFinaleGriglia(i);
+    const nonAmm=esitoOf(i)==="non_ammesso";
     const bg=idx%2===0?"#FFFFFF":"#F8FAFC";
+    const vfCell=nonAmm
+      ?`<td class="rv" style="background:#FEF2F2;color:#DC2626;font-weight:900;font-size:15pt;border:1.5px solid #DC2626">N.A.</td>`
+      :`<td class="rv" style="background:${cBgC(vf)};color:${cCC(vf)};font-weight:900;font-size:15pt;border:1.5px solid ${cCC(vf)}">${vf!==null?vf:"—"}</td>`;
     tableRows+=`<tr style="background:${bg}">
 <td class="rc">${st.num}</td>
 <td class="rn">${fmtName(st.name)}</td>
@@ -1827,7 +1843,7 @@ function buildGrigliaFinaleHtml(){
 <td class="rv" style="color:${cC(m3)};font-weight:700">${m3!==null?m3.toFixed(1):"—"}</td>
 <td class="rv" style="background:${cBgC(mt)};color:${cCC(mt)};font-weight:800">${mt!==null?mt:"—"}</td>
 <td class="rv" style="color:${cCC(pr)};font-weight:700">${pr!==null?pr.toFixed(2):"—"}</td>
-<td class="rv" style="background:${cBgC(vf)};color:${cCC(vf)};font-weight:900;font-size:15pt;border:1.5px solid ${cCC(vf)}">${vf!==null?vf:"—"}</td>
+${vfCell}
 </tr>\n`;
   });
 
@@ -1917,7 +1933,7 @@ html,body{font-family:Arial,sans-serif;color:#000;background:#ccc}
 <tbody>
 ${tableRows}</tbody>
 </table>
-<p class="legenda">Media 3&deg; Anno: media ponderata per ore dei moduli con voto inseriti quest'anno (esclusa condotta). Media Triennale: media aritmetica di 1&deg;+2&deg;+3&deg; anno &times;10, in centesimi senza decimali. Voto Finale: 80% Media Triennale + 20% Prova Multidisciplinare.</p>
+<p class="legenda">Media 3&deg; Anno: media ponderata per ore dei moduli con voto inseriti quest'anno (esclusa condotta). Media Triennale: media aritmetica di 1&deg;+2&deg;+3&deg; anno &times;10, in centesimi senza decimali. Voto Finale: 80% Media Triennale + 20% Prova Multidisciplinare.<br><strong style="color:#DC2626">N.A. = NON AMMESSO</strong></p>
 <div class="firme"><span><strong>Data</strong>: _______________</span><span><strong>FIRMA COORDINATORE</strong>: ___________________________</span></div>
 </div>
 <div class="pf"><img class="fi" src="${IMG_ASSET_1}" alt="ISO 9001"><div class="ft"><b>ERIS ENTE DEL TERZO SETTORE</b>Sede legale: via Salvatore Paola, 14/a &ndash; 95125 Catania | tel./fax: 095433940 | didattica.ct@erisformazione.it | amministrazione.ct@erisformazione.it<br>Associazione riconosciuta, iscrizione n&deg;&nbsp;293979 C.C.I.A.A. di Catania | CF: 97180200822 | info@pec.erisformazione.it | www.erisformazione.it</div><img class="fi" src="${IMG_ASSET_2}" alt="OHSAS 18001"></div>
