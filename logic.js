@@ -114,13 +114,15 @@ async function toggleTrasferito(idx){
 // nella pagella finale (retrocompatibile col comportamento originale).
 function esitoOf(i){return App.esiti?.[i]==="non_ammesso"?"non_ammesso":"ammesso";}
 async function toggleEsito(idx){
-  if(!(App.teacher&&(App.teacher.isAdmin||App.teacher.isTutor))){toast("⛔ Solo Admin e Tutor","err");return;}
+  if(!(App.teacher&&(App.teacher.isAdmin||App.teacher.isTutor||App.teacher.isSegreteria))){toast("⛔ Solo Admin, Tutor e Segreteria","err");return;}
   if(!App.esiti)App.esiti={};
   const nuovo=esitoOf(idx)==="ammesso"?"non_ammesso":"ammesso";
   App.esiti[idx]=nuovo;
   await fbSet("esiti/"+idx,nuovo);
   toast((nuovo==="non_ammesso"?"⛔ ":"✅ ")+fmtName(STUDENTS[idx].name)+" — "+(nuovo==="non_ammesso"?"NON AMMESSO":"AMMESSO"),"ok");
-  renderAdminAlunni();
+  // Ridisegna il tab attualmente aperto (Alunni o Griglia Finale)
+  if(App.adminTab==="finale"&&typeof renderAdminFinale==="function")renderAdminFinale();
+  else renderAdminAlunni();
 }
 
 

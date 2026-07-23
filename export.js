@@ -1116,6 +1116,8 @@ async function buildDocxPagella(st,idx){
     escXml(courseLabel.toUpperCase()));
   // Aggiorna la data alla data odierna
   xml=xml.replace(/Ragusa, \d{2}\/\d{2}\/\d{4}/,"Ragusa, "+new Date().toLocaleDateString("it-IT",{day:"2-digit",month:"2-digit",year:"numeric"}));
+  // Firma: il template riporta "La Segreteria" → deve firmare la Tutor
+  xml=xml.split("La Segreteria").join(escXml("La Tutor: Dott.ssa "+TUTOR_NAME));
 
   // Sostituisce le righe della tabella materie
   xml=xml.replace(/(<w:tblGrid>[\s\S]*?<\/w:tblGrid>)([\s\S]*)(<w:bookmarkEnd)/,
@@ -1277,7 +1279,7 @@ function buildHtmlPagella(st,idx){
   </div>
   <div class="firme" style="margin-top:8px">
     <span><strong>Ragusa,</strong> ${today}</span>
-    <span><strong>La Segreteria</strong>: ___________________________</span>
+    <span><strong>La Tutor</strong>: Dott.ssa ${TUTOR_NAME} &nbsp;___________________________</span>
   </div>
 </div>
 <div class="pf"><img class="fi" src="${IMG_ASSET_1}" alt="ISO 9001"><div class="ft"><b>ERIS ENTE DEL TERZO SETTORE</b>Sede legale: via Salvatore Paola, 14/a &ndash; 95125 Catania | tel./fax: 095433940 | didattica.ct@erisformazione.it | amministrazione.ct@erisformazione.it<br>Associazione riconosciuta, iscrizione n&deg;&nbsp;293979 C.C.I.A.A. di Catania | CF: 97180200822 | info@pec.erisformazione.it | www.erisformazione.it</div><img class="fi" src="${IMG_ASSET_2}" alt="OHSAS 18001"></div>

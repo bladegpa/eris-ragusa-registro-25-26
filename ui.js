@@ -1572,6 +1572,7 @@ function renderAdminAlunni(){
   const isT=!!App.teacher.isTutor;
   const isAdm=!!App.teacher.isAdmin;
   const isRO=!!App.teacher.isSegreteria;
+  const canEsito=isAdm||isT||isRO;   // Admin, Tutor e Segreteria possono impostare l'esito
   const accN=STUDENTS.filter((_,i)=>corsS(i)===COURSE_TRACKS.track1.id&&!App.dimessi[i]&&!App.trasferiti[i]).length;
   const estN=STUDENTS.filter((_,i)=>corsS(i)===COURSE_TRACKS.track2.id&&!App.dimessi[i]&&!App.trasferiti[i]).length;
   const unN=STUDENTS.filter((_,i)=>!corsS(i)&&!App.dimessi[i]&&!App.trasferiti[i]).length;
@@ -1600,7 +1601,7 @@ function renderAdminAlunni(){
     </div>
     ${!isT?`<div class="info-box info-yellow">⚠️ Assegna ogni alunno al corso. I <strong>DIMESSI</strong> e i <strong>TRASFERITI</strong> non sono visibili ai docenti.</div>`
            :`<div class="info-box info-green">✅ Tutor — puoi visualizzare lo stato degli alunni e impostare l'esito finale.</div>`}
-    ${(isAdm||isT)?`<div class="info-box info-blue" style="display:flex;justify-content:center;gap:18px;align-items:center">🎓 Esito finale &nbsp;<span>✅ Ammessi: <strong>${nAmm}</strong></span><span>⛔ Non ammessi: <strong style="color:#DC2626">${nNonAmm}</strong></span></div>`:""}
+    ${canEsito?`<div class="info-box info-blue" style="display:flex;justify-content:center;gap:18px;align-items:center">🎓 Esito finale &nbsp;<span>✅ Ammessi: <strong>${nAmm}</strong></span><span>⛔ Non ammessi: <strong style="color:#DC2626">${nNonAmm}</strong></span></div>`:""}
 
     ${(!isRO&&!isT)?`<div class="card" style="margin-bottom:10px">
       <div class="card-head"><span class="sec-lbl">📅 Date di Ammissione</span></div>
@@ -1691,7 +1692,7 @@ function renderAdminAlunni(){
               :tr
               ?`<div style="font-size:10px;color:#EA580C;font-weight:700">🔄 TRASFERITO${td?` — <span style="color:#C2410C">dal ${td}</span>`:""}</div>`
               :`<div style="font-size:10px;color:#64748B">M.A.: <span style="color:${maC};font-weight:700">${maS}</span> &nbsp;M.P.: <span style="color:${mpC};font-weight:700">${mpS}</span></div>
-                 ${(isAdm||isT)?`<button class="btn-esito" data-esito="${i}" style="margin-top:5px;height:24px;padding:0 10px;border-radius:7px;border:1.5px solid ${es==="non_ammesso"?"#DC2626":"#059669"};background:${es==="non_ammesso"?"#FEF2F2":"#F0FDF4"};color:${es==="non_ammesso"?"#DC2626":"#059669"};font-size:11px;font-weight:800;cursor:pointer;white-space:nowrap">${es==="non_ammesso"?"⛔ NON AMMESSO":"✅ AMMESSO"}</button>`:""}`}
+                 ${canEsito?`<button class="btn-esito" data-esito="${i}" style="margin-top:5px;height:24px;padding:0 10px;border-radius:7px;border:1.5px solid ${es==="non_ammesso"?"#DC2626":"#059669"};background:${es==="non_ammesso"?"#FEF2F2":"#F0FDF4"};color:${es==="non_ammesso"?"#DC2626":"#059669"};font-size:11px;font-weight:800;cursor:pointer;white-space:nowrap">${es==="non_ammesso"?"⛔ NON AMMESSO":"✅ AMMESSO"}</button>`:""}`}
           </div>
           ${(!isRO&&!isT&&!inactive)?`<select class="cors-sel" data-cors-s="${i}">
             <option value=""${!cs?" selected":""}>— Nessuno</option>
@@ -1755,8 +1756,8 @@ function renderAdminAlunni(){
       });
     }
   }
-  // Switch AMMESSO / NON AMMESSO — Admin e Tutor
-  if(isAdm||isT){
+  // Switch AMMESSO / NON AMMESSO — Admin, Tutor e Segreteria
+  if(canEsito){
     $$(".btn-esito[data-esito]").forEach(btn=>{btn.addEventListener("click",function(){toggleEsito(parseInt(this.dataset.esito));});});
   }
 }
@@ -2206,11 +2207,12 @@ function renderAdminFinale(){
   const el=$("#admin-body");
   if(!isClasseFinale()){el.innerHTML=`<div class="info-box info-yellow">⚠️ La Griglia Finale è disponibile solo per la Classe 3F.</div>`;return;}
   const isAdm=App.teacher.isAdmin;
+  const canEsito=isAdm||!!App.teacher.isTutor||!!App.teacher.isSegreteria; // esito: Admin, Tutor e Segreteria
   const sts=activeStudents();
 
   el.innerHTML=`
     <div class="info-box info-blue">🎓 <strong>Griglia Finale — Classe 3F</strong>. Media 3° Anno = media ponderata per ore dei moduli con voto. Media Voto Triennale = media aritmetica di 1°, 2° e 3° anno (×10, in centesimi, senza decimali). Voto Finale = 80% Media Triennale + 20% Prova Multidisciplinare.
-    ${!isAdm?`<br><span style="color:#92400E">🔒 Sola lettura — solo l'Admin può modificare i valori.</span>`:""}
+    ${!isAdm?`<br><span style="color:#92400E">🔒 I valori numerici sono modificabili solo dall'Admin${canEsito?" — puoi comunque impostare l'esito AMMESSO / NON AMMESSO":""}.</span>`:""}
     <br><span style="color:#DC2626;font-weight:700">N.A. = NON AMMESSO</span> — se un alunno è impostato su NON AMMESSO, il Voto Finale mostra <strong style="color:#DC2626">N.A.</strong></div>
     <button class="btn-print-grid" id="btn-stampa-finale" style="background:linear-gradient(135deg,#9D174D,#BE185D)"><span style="font-size:22px">🖨️</span><div><div class="btn-lbl-big">Stampa Griglia Finale</div><div class="btn-lbl-small">HTML pronto per la stampa · tutte le colonne · Classe 3F</div></div></button>
     <button class="btn-print-grid" id="btn-stampa-finale-a4" style="background:linear-gradient(135deg,#1B3F8B,#0F2557)"><span style="font-size:22px">📊</span><div><div class="btn-lbl-big">Stampa Griglia A4 + Ammissione</div><div class="btn-lbl-small">Griglia completa (materie, condotta, media) + colonne Griglia Finale</div></div></button>
@@ -2224,7 +2226,7 @@ function renderAdminFinale(){
           <th title="Media aritmetica di 1°+2°+3° anno, ×10 (in centesimi)">🎓<br><span style="font-size:9px;font-weight:700">Media<br>Trienn./100</span></th>
           <th title="Prova Multidisciplinare (0-100, inserita dall'Admin)">📝<br><span style="font-size:9px;font-weight:700">Prova<br>Multidisc./100</span></th>
           <th title="80% Media Triennale + 20% Prova Multidisciplinare">🏆<br><span style="font-size:9px;font-weight:700">Voto<br>Finale/100</span></th>
-          ${isAdm?`<th title="Esito finale scrutinio">🎯<br><span style="font-size:9px;font-weight:700">Esito</span></th>`:""}
+          ${canEsito?`<th title="Esito finale scrutinio">🎯<br><span style="font-size:9px;font-weight:700">Esito</span></th>`:""}
         </tr>
       </thead>
       <tbody>
@@ -2248,7 +2250,7 @@ function renderAdminFinale(){
           const vfCell=nonAmm
             ?`<td class="td-vf" style="color:#DC2626;background:#FEF2F2;font-weight:900">N.A.</td>`
             :`<td class="td-vf" style="color:${gradeColorCento(vf)};background:${gradeBgCento(vf)}">${vfS}</td>`;
-          const esitoCell=isAdm
+          const esitoCell=canEsito
             ?`<td style="text-align:center"><button class="btn-esito-finale" data-esito-fin="${i}" style="height:26px;padding:0 8px;border-radius:7px;border:1.5px solid ${nonAmm?"#DC2626":"#059669"};background:${nonAmm?"#FEF2F2":"#F0FDF4"};color:${nonAmm?"#DC2626":"#059669"};font-size:10px;font-weight:800;cursor:pointer;white-space:nowrap">${nonAmm?"⛔ NON AMMESSO":"✅ AMMESSO"}</button></td>`
             :"";
           return`<tr>
@@ -2273,6 +2275,8 @@ function renderAdminFinale(){
         saveFinaleValue(i,field,this.value).then(()=>renderAdminFinale());
       });
     });
+  }
+  if(canEsito){
     $$(".btn-esito-finale[data-esito-fin]").forEach(btn=>{
       btn.addEventListener("click",function(){toggleEsito(parseInt(this.dataset.esitoFin));});
     });
